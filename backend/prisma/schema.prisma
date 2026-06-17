@@ -1,0 +1,84 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id                Int      @id @default(autoincrement())
+  name              String
+  email             String   @unique
+  password          String
+  role              String   // Valores esperados: "ADMIN", "OPERATOR"
+  assigned_location String?  // Valores esperados: "JUJUY", "SALTA". (Nulo para el ADMIN)
+  created_at        DateTime @default(now())
+
+  // Relaciones inversas necesarias para Prisma
+  trips_departed    Trip[]   @relation("DepartureOperator")
+  trips_arrived     Trip[]   @relation("ArrivalOperator")
+
+  @@map("users") // Mapea a la tabla "users" en la base de datos
+}
+
+model Driver {
+  id          Int       @id @default(autoincrement())
+  first_name  String
+  last_name   String
+  phone       String
+  national_id String    @unique
+
+  // Relación: Un chofer puede tener varios vehículos
+  vehicles    Vehicle[]
+
+  @@map("drivers") // Mapea a la tabla "drivers" en la base de datos
+}
+
+model Vehicle {
+  id                 Int       @id @default(autoincrement())
+  license_plate      String    @unique
+  model              String
+  passenger_capacity Int
+  status             String    // Valores esperados: "AVAILABLE", "ON_TRIP", "OUT_OF_SERVICE"
+  current_location   String    // Valores esperados: "JUJUY", "SALTA"
+  queue_entry_at     DateTime? // Cuándo entró a la fila. (Nulo si está en viaje)
+  
+  driver_id          Int
+  driver             Driver    @relation(fields: [driver_id], references: [id])
+
+  // Relación: Un vehículo tiene muchos viajes
+  trips              Trip[]
+
+  @@map("vehicles") // Mapea a la tabla "vehicles" en la base de datos
+}
+
+model Trip {
+  id                    Int       @id @default(autoincrement())
+  
+  vehicle_id            Int
+  vehicle               Vehicle   @relation(fields: [vehicle_id], references: [id])
+  
+  departure_operator_id Int
+  departure_operator    User      @relation("DepartureOperator", fields: [departure_operator_id], references: [id])
+  
+  arrival_operator_id   Int?      // Nulo hasta que llegue a destino
+  arrival_operator      User?     @relation("ArrivalOperator", fields: [arrival_operator_id], references: [id])
+  
+  origin                String    // Valores esperados: "JUJUY", "SALTA"
+  destination           String    // Valores esperados: "SALTA", "JUJUY"
+  occupied_seats        Int
+  price_per_passenger   Decimal   // Prisma usa Decimal para dinero por precisión
+  base_commission       Decimal   // Comisión que se cobra
+  status                String    // Valores esperados: "IN_PROGRESS", "COMPLETED", "CANCELLED"
+  departure_at          DateTime  @default(now())
+  arrival_at            DateTime? // Se llena al registrar la llegada
+
+  @@map("trips") // Mapea a la tabla "trips" en la base de datos
+}
