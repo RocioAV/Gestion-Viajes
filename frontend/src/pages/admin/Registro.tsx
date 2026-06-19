@@ -2,48 +2,87 @@ import type { FormEvent } from 'react'
 import type { RegistroFormData } from '../../validations/auth'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { toast } from 'react-toastify'
 import { safeParse } from 'valibot'
 import FormLayout from '../../components/FormLayout'
+import { registerUser } from '../../services/auth.service'
 import { RegistroSchema } from '../../validations/auth'
 
 const LOCATIONES = ['JUJUY', 'SALTA'] as const
 
+type FieldErrors = Partial<Record<keyof RegistroFormData, string>>
+type TouchedFields = Partial<Record<keyof RegistroFormData, boolean>>
+
+function getFieldErrors(data: RegistroFormData): FieldErrors {
+  const result = safeParse(RegistroSchema, data)
+  const fieldErrors: FieldErrors = {}
+  if (!result.success) {
+    for (const issue of result.issues) {
+      const key = issue.path?.[0]?.key as keyof RegistroFormData | undefined
+      if (key && !fieldErrors[key]) {
+        fieldErrors[key] = issue.message
+      }
+    }
+  }
+  if (data.password && data.confirmPassword && data.password !== data.confirmPassword) {
+    fieldErrors.confirmPassword = 'Las contraseñas no coinciden'
+  }
+  return fieldErrors
+}
+
+const INITIAL_FORM: RegistroFormData = {
+  name: '',
+  email: '',
+  password: '',
+  confirmPassword: '',
+  assigned_location: '' as RegistroFormData['assigned_location'],
+}
+
 function Registro() {
-  const [form, setForm] = useState({
-    name: '',
-    email: '',
-    password: '',
-    assigned_location: '' as '' | 'JUJUY' | 'SALTA',
-  })
-  const [errors, setErrors] = useState<Partial<Record<keyof RegistroFormData, string>>>({})
+  const [form, setForm] = useState<RegistroFormData>(INITIAL_FORM)
+  const [touched, setTouched] = useState<TouchedFields>({})
+  const [loading, setLoading] = useState(false)
+
+  const fieldErrors = getFieldErrors(form)
+  const isValid = Object.keys(fieldErrors).length === 0
 
   function handleChange(field: keyof RegistroFormData, value: string) {
     setForm(prev => ({ ...prev, [field]: value }))
-    setErrors((prev) => {
-      const next = { ...prev }
-      delete next[field]
-      return next
-    })
   }
 
-  function handleSubmit(e: FormEvent) {
+  function handleBlur(field: keyof RegistroFormData) {
+    setTouched(prev => ({ ...prev, [field]: true }))
+  }
+
+  function resetForm() {
+    setForm(INITIAL_FORM)
+    setTouched({})
+  }
+
+  async function handleSubmit(e: FormEvent) {
     e.preventDefault()
-    const result = safeParse(RegistroSchema, form)
-    if (!result.success) {
-      const fieldErrors: Partial<Record<keyof RegistroFormData, string>> = {}
-      for (const issue of result.issues) {
-        const key = issue.path?.[0]?.key as keyof RegistroFormData | undefined
-        if (key && !fieldErrors[key]) {
-          fieldErrors[key] = issue.message
-        }
-      }
-      setErrors(fieldErrors)
-      return
-    }
-    setErrors({})
-  }
+    setTouched({ name: true, email: true, password: true, confirmPassword: true, assigned_location: true })
 
-  const isValid = safeParse(RegistroSchema, form).success
+    if (!isValid) return
+
+    setLoading(true)
+
+    try {
+      const { confirmPassword: _, ...apiData } = form
+      const response = await registerUser(apiData)
+      console.log('Registro exitoso:', response)
+      toast.success('Operador registrado correctamente')
+    }
+    catch (err) {
+      const message = err instanceof Error ? err.message : 'Error inesperado'
+      console.log('Registro error:', message)
+      toast.error(message)
+    }
+    finally {
+      setLoading(false)
+      resetForm()
+    }
+  }
 
   return (
     <FormLayout backTo="/login">
@@ -64,10 +103,13 @@ function Registro() {
             placeholder="Juan Pérez"
             value={form.name}
             onChange={e => handleChange('name', e.target.value)}
+            onBlur={() => handleBlur('name')}
             className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 placeholder:text-gray-400
                        focus:ring-2 focus:ring-primary focus:border-primary outline-none transition"
           />
-          {errors.name && <p className="text-error text-sm mt-1">{errors.name}</p>}
+          {touched.name && fieldErrors.name && (
+            <p className="text-error text-sm mt-1">{fieldErrors.name}</p>
+          )}
         </div>
 
         <div>
@@ -81,10 +123,13 @@ function Registro() {
             placeholder="operador@ejemplo.com"
             value={form.email}
             onChange={e => handleChange('email', e.target.value)}
+            onBlur={() => handleBlur('email')}
             className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 placeholder:text-gray-400
                        focus:ring-2 focus:ring-primary focus:border-primary outline-none transition"
           />
-          {errors.email && <p className="text-error text-sm mt-1">{errors.email}</p>}
+          {touched.email && fieldErrors.email && (
+            <p className="text-error text-sm mt-1">{fieldErrors.email}</p>
+          )}
         </div>
 
         <div>
@@ -98,10 +143,33 @@ function Registro() {
             placeholder="••••••"
             value={form.password}
             onChange={e => handleChange('password', e.target.value)}
+            onBlur={() => handleBlur('password')}
             className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 placeholder:text-gray-400
                        focus:ring-2 focus:ring-primary focus:border-primary outline-none transition"
           />
-          {errors.password && <p className="text-error text-sm mt-1">{errors.password}</p>}
+          {touched.password && fieldErrors.password && (
+            <p className="text-error text-sm mt-1">{fieldErrors.password}</p>
+          )}
+        </div>
+
+        <div>
+          <label htmlFor="confirm-password" className="block text-sm font-medium text-gray-700 mb-1.5">
+            Confirmar contraseña
+          </label>
+          <input
+            id="confirm-password"
+            type="password"
+            autoComplete="new-password"
+            placeholder="••••••"
+            value={form.confirmPassword}
+            onChange={e => handleChange('confirmPassword', e.target.value)}
+            onBlur={() => handleBlur('confirmPassword')}
+            className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 placeholder:text-gray-400
+                       focus:ring-2 focus:ring-primary focus:border-primary outline-none transition"
+          />
+          {touched.confirmPassword && fieldErrors.confirmPassword && (
+            <p className="text-error text-sm mt-1">{fieldErrors.confirmPassword}</p>
+          )}
         </div>
 
         <div>
@@ -112,6 +180,7 @@ function Registro() {
             id="location"
             value={form.assigned_location}
             onChange={e => handleChange('assigned_location', e.target.value)}
+            onBlur={() => handleBlur('assigned_location')}
             className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900
                        focus:ring-2 focus:ring-primary focus:border-primary outline-none transition
                        bg-white cursor-pointer"
@@ -125,18 +194,18 @@ function Registro() {
               </option>
             ))}
           </select>
-          {errors.assigned_location && (
-            <p className="text-error text-sm mt-1">{errors.assigned_location}</p>
+          {touched.assigned_location && fieldErrors.assigned_location && (
+            <p className="text-error text-sm mt-1">{fieldErrors.assigned_location}</p>
           )}
         </div>
 
         <button
           type="submit"
-          disabled={!isValid}
+          disabled={!isValid || loading}
           className="w-full bg-primary text-white rounded-lg py-2.5 font-medium
                      hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
         >
-          Registrar operador
+          {loading ? 'Registrando...' : 'Registrar operador'}
         </button>
       </form>
 
