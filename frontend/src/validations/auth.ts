@@ -1,4 +1,5 @@
-import { email, minLength, string, object, picklist, pipe, type InferOutput } from 'valibot'
+import type { InferOutput } from 'valibot'
+import { email, minLength, object, picklist, pipe, string } from 'valibot'
 
 export const LoginSchema = object({
   email: pipe(string(), minLength(1, 'El correo es requerido'), email('Correo inválido')),

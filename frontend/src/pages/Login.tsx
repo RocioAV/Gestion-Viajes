@@ -1,41 +1,75 @@
-import { useState, type FormEvent } from 'react'
+import type { FormEvent } from 'react'
+import type { LoginFormData } from '../validations/auth'
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { toast } from 'react-toastify'
 import { safeParse } from 'valibot'
 import FormLayout from '../components/FormLayout'
-import { LoginSchema, type LoginFormData } from '../validations/auth'
+import { loginUser } from '../services/auth.service'
+import { LoginSchema } from '../validations/auth'
+
+type FieldErrors = Partial<Record<keyof LoginFormData, string>>
+type TouchedFields = Partial<Record<keyof LoginFormData, boolean>>
+
+function getFieldErrors(data: LoginFormData): FieldErrors {
+  const result = safeParse(LoginSchema, data)
+  if (result.success)
+    return {}
+  const fieldErrors: FieldErrors = {}
+  for (const issue of result.issues) {
+    const key = issue.path?.[0]?.key as keyof LoginFormData | undefined
+    if (key && !fieldErrors[key]) {
+      fieldErrors[key] = issue.message
+    }
+  }
+  return fieldErrors
+}
+
+const INITIAL_FORM: LoginFormData = { email: '', password: '' }
 
 function Login() {
-  const [form, setForm] = useState<LoginFormData>({ email: '', password: '' })
-  const [errors, setErrors] = useState<Partial<Record<keyof LoginFormData, string>>>({})
+  const [form, setForm] = useState<LoginFormData>(INITIAL_FORM)
+  const [touched, setTouched] = useState<TouchedFields>({})
+  const [loading, setLoading] = useState(false)
+
+  const fieldErrors = getFieldErrors(form)
+  const isValid = Object.keys(fieldErrors).length === 0
 
   function handleChange(field: keyof LoginFormData, value: string) {
-    setForm((prev) => ({ ...prev, [field]: value }))
-    setErrors((prev) => {
-      const next = { ...prev }
-      delete next[field]
-      return next
-    })
+    setForm(prev => ({ ...prev, [field]: value }))
   }
 
-  function handleSubmit(e: FormEvent) {
+  function handleBlur(field: keyof LoginFormData) {
+    setTouched(prev => ({ ...prev, [field]: true }))
+  }
+
+  function resetForm() {
+    setForm(INITIAL_FORM)
+    setTouched({})
+  }
+
+  async function handleSubmit(e: FormEvent) {
     e.preventDefault()
-    const result = safeParse(LoginSchema, form)
-    if (!result.success) {
-      const fieldErrors: Partial<Record<keyof LoginFormData, string>> = {}
-      for (const issue of result.issues) {
-        const key = issue.path?.[0]?.key as keyof LoginFormData | undefined
-        if (key && !fieldErrors[key]) {
-          fieldErrors[key] = issue.message
-        }
-      }
-      setErrors(fieldErrors)
-      return
-    }
-    setErrors({})
-    console.log('Login:', result.output)
-  }
+    setTouched({ email: true, password: true })
 
-  const isValid = safeParse(LoginSchema, form).success
+    if (!isValid)
+      return
+
+    setLoading(true)
+
+    try {
+      await loginUser(form)
+      toast.success('Inicio de sesión exitoso')
+    }
+    catch (err) {
+      const message = err instanceof Error ? err.message : 'Error inesperado'
+      toast.error(message)
+    }
+    finally {
+      setLoading(false)
+      resetForm()
+    }
+  }
 
   return (
     <FormLayout backTo="/">
@@ -53,13 +87,16 @@ function Login() {
             id="email"
             type="email"
             autoComplete="email"
-            placeholder="admin@gestionviajes.com"
+            placeholder="juan@correo.com"
             value={form.email}
-            onChange={(e) => handleChange('email', e.target.value)}
+            onChange={e => handleChange('email', e.target.value)}
+            onBlur={() => handleBlur('email')}
             className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 placeholder:text-gray-400
                        focus:ring-2 focus:ring-primary focus:border-primary outline-none transition"
           />
-          {errors.email && <p className="text-error text-sm mt-1">{errors.email}</p>}
+          {touched.email && fieldErrors.email && (
+            <p className="text-error text-sm mt-1">{fieldErrors.email}</p>
+          )}
         </div>
 
         <div>
@@ -72,20 +109,23 @@ function Login() {
             autoComplete="current-password"
             placeholder="••••••"
             value={form.password}
-            onChange={(e) => handleChange('password', e.target.value)}
+            onChange={e => handleChange('password', e.target.value)}
+            onBlur={() => handleBlur('password')}
             className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 placeholder:text-gray-400
                        focus:ring-2 focus:ring-primary focus:border-primary outline-none transition"
           />
-          {errors.password && <p className="text-error text-sm mt-1">{errors.password}</p>}
+          {touched.password && fieldErrors.password && (
+            <p className="text-error text-sm mt-1">{fieldErrors.password}</p>
+          )}
         </div>
 
         <button
           type="submit"
-          disabled={!isValid}
+          disabled={!isValid || loading}
           className="w-full bg-primary text-white rounded-lg py-2.5 font-medium
                      hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
         >
-          Iniciar sesión
+          {loading ? 'Ingresando...' : 'Iniciar sesión'}
         </button>
       </form>
 

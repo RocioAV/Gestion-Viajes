@@ -1,6 +1,8 @@
-import { useState, type FormEvent } from 'react'
+import type { FormEvent } from 'react'
+import type { InferOutput } from 'valibot'
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { safeParse, type InferOutput } from 'valibot'
+import { safeParse } from 'valibot'
 import FormLayout from '../components/FormLayout'
 import { RecuperarPasswordSchema } from '../validations/recuperar-password'
 
@@ -36,7 +38,6 @@ function RecuperarPassword() {
     }
     setErrors({})
     setEnviado(true)
-    console.log('Recuperar password:', result.output)
   }
 
   const isValid = safeParse(RecuperarPasswordSchema, form).success
@@ -95,7 +96,7 @@ function RecuperarPassword() {
             autoComplete="email"
             placeholder="admin@gestionviajes.com"
             value={form.email}
-            onChange={(e) => handleChange(e.target.value)}
+            onChange={e => handleChange(e.target.value)}
             className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 placeholder:text-gray-400
                        focus:ring-2 focus:ring-primary focus:border-primary outline-none transition"
           />

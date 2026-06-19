@@ -1,8 +1,10 @@
-import { useState, type FormEvent } from 'react'
+import type { FormEvent } from 'react'
+import type { RegistroFormData } from '../../validations/auth'
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { safeParse } from 'valibot'
 import FormLayout from '../../components/FormLayout'
-import { RegistroSchema, type RegistroFormData } from '../../validations/auth'
+import { RegistroSchema } from '../../validations/auth'
 
 const LOCATIONES = ['JUJUY', 'SALTA'] as const
 
@@ -16,7 +18,7 @@ function Registro() {
   const [errors, setErrors] = useState<Partial<Record<keyof RegistroFormData, string>>>({})
 
   function handleChange(field: keyof RegistroFormData, value: string) {
-    setForm((prev) => ({ ...prev, [field]: value }))
+    setForm(prev => ({ ...prev, [field]: value }))
     setErrors((prev) => {
       const next = { ...prev }
       delete next[field]
@@ -39,7 +41,6 @@ function Registro() {
       return
     }
     setErrors({})
-    console.log('Registro:', result.output)
   }
 
   const isValid = safeParse(RegistroSchema, form).success
@@ -62,7 +63,7 @@ function Registro() {
             autoComplete="name"
             placeholder="Juan Pérez"
             value={form.name}
-            onChange={(e) => handleChange('name', e.target.value)}
+            onChange={e => handleChange('name', e.target.value)}
             className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 placeholder:text-gray-400
                        focus:ring-2 focus:ring-primary focus:border-primary outline-none transition"
           />
@@ -79,7 +80,7 @@ function Registro() {
             autoComplete="email"
             placeholder="operador@ejemplo.com"
             value={form.email}
-            onChange={(e) => handleChange('email', e.target.value)}
+            onChange={e => handleChange('email', e.target.value)}
             className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 placeholder:text-gray-400
                        focus:ring-2 focus:ring-primary focus:border-primary outline-none transition"
           />
@@ -96,7 +97,7 @@ function Registro() {
             autoComplete="new-password"
             placeholder="••••••"
             value={form.password}
-            onChange={(e) => handleChange('password', e.target.value)}
+            onChange={e => handleChange('password', e.target.value)}
             className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 placeholder:text-gray-400
                        focus:ring-2 focus:ring-primary focus:border-primary outline-none transition"
           />
@@ -110,7 +111,7 @@ function Registro() {
           <select
             id="location"
             value={form.assigned_location}
-            onChange={(e) => handleChange('assigned_location', e.target.value)}
+            onChange={e => handleChange('assigned_location', e.target.value)}
             className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900
                        focus:ring-2 focus:ring-primary focus:border-primary outline-none transition
                        bg-white cursor-pointer"
@@ -118,7 +119,7 @@ function Registro() {
             <option value="" disabled>
               Seleccionar sede
             </option>
-            {LOCATIONES.map((loc) => (
+            {LOCATIONES.map(loc => (
               <option key={loc} value={loc}>
                 {loc}
               </option>
@@ -140,7 +141,8 @@ function Registro() {
       </form>
 
       <p className="mt-6 text-center text-sm text-gray-500">
-        ¿Ya tenés cuenta?{' '}
+        ¿Ya tenés cuenta?
+        {' '}
         <Link to="/login" className="text-primary font-medium hover:underline">
           Inicia sesión
         </Link>
