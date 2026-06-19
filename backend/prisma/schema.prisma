@@ -35,8 +35,7 @@ model Driver {
   phone       String
   national_id String    @unique
 
-  // Relación: Un chofer puede tener varios vehículos
-  vehicles    Vehicle[]
+  vehicle    Vehicle?
 
   @@map("drivers") // Mapea a la tabla "drivers" en la base de datos
 }
@@ -49,8 +48,8 @@ model Vehicle {
   status             String    // Valores esperados: "AVAILABLE", "ON_TRIP", "OUT_OF_SERVICE"
   current_location   String    // Valores esperados: "JUJUY", "SALTA"
   queue_entry_at     DateTime? // Cuándo entró a la fila. (Nulo si está en viaje)
-  
-  driver_id          Int
+
+  driver_id          Int       @unique
   driver             Driver    @relation(fields: [driver_id], references: [id])
 
   // Relación: Un vehículo tiene muchos viajes
