@@ -63,19 +63,18 @@ function Registro() {
     e.preventDefault()
     setTouched({ name: true, email: true, password: true, confirmPassword: true, assigned_location: true })
 
-    if (!isValid) return
+    if (!isValid)
+      return
 
     setLoading(true)
 
     try {
       const { confirmPassword: _, ...apiData } = form
-      const response = await registerUser(apiData)
-      console.log('Registro exitoso:', response)
+      await registerUser(apiData)
       toast.success('Operador registrado correctamente')
     }
     catch (err) {
       const message = err instanceof Error ? err.message : 'Error inesperado'
-      console.log('Registro error:', message)
       toast.error(message)
     }
     finally {
