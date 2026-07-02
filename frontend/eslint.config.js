@@ -1,5 +1,4 @@
 import antfu from '@antfu/eslint-config'
-import { types } from 'node:util'
 
 export default antfu({
   react: true,

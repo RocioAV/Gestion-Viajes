@@ -25,13 +25,13 @@ export async function loginUser(input: LoginInput) {
   })
 
   if (!user) {
-    throw Object.assign(new Error('Invalid credentials'), { status: 401 })
+    throw Object.assign(new Error('Credenciales inválidas'), { status: 401 })
   }
 
   const isValid = await bcrypt.compare(input.password, user.password)
 
   if (!isValid) {
-    throw Object.assign(new Error('Invalid credentials'), { status: 401 })
+    throw Object.assign(new Error('Credenciales inválidas'), { status: 401 })
   }
 
   const token = jwt.sign(
