@@ -5,6 +5,7 @@ export const createVehicleSchema = v.object({
   model: v.pipe(v.string(), v.minLength(1, 'El modelo es requerido')),
   passenger_capacity: v.pipe(v.number(), v.minValue(1, 'La capacidad debe ser al menos 1')),
   driver_id: v.pipe(v.number(), v.minValue(1, 'El ID del chofer es requerido')),
+  current_location: v.optional(v.union([v.literal('JUJUY'), v.literal('SALTA')])),
 })
 
 export const updateVehicleSchema = v.partial(createVehicleSchema)

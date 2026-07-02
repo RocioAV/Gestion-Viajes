@@ -15,14 +15,14 @@ export async function createDriver(input: CreateDriverInput) {
 
 export async function getDrivers() {
   return prisma.driver.findMany({
-    include: { vehicles: true },
+    include: { vehicle: true },
   })
 }
 
 export async function getDriverById(id: number) {
   const driver = await prisma.driver.findUnique({
     where: { id },
-    include: { vehicles: true },
+    include: { vehicle: true },
   })
 
   if (!driver) {
@@ -65,16 +65,16 @@ export async function updateDriver(id: number, input: UpdateDriverInput) {
 export async function deleteDriver(id: number) {
   const driver = await prisma.driver.findUnique({
     where: { id },
-    include: { vehicles: true },
+    include: { vehicle: true },
   })
 
   if (!driver) {
     throw Object.assign(new Error('Chofer no encontrado'), { status: 404 })
   }
 
-  if (driver.vehicles.length > 0) {
+  if (driver.vehicle) {
     throw Object.assign(
-      new Error('No se puede eliminar un chofer con vehículos asociados'),
+      new Error('No se puede eliminar un chofer con un vehículo asociado'),
       { status: 409 },
     )
   }
