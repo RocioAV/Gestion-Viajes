@@ -29,6 +29,15 @@ async function main() {
   })
 
   console.log(`Admin user created: ${admin.email}`)
+
+  const existingPrice = await prisma.appSetting.findUnique({ where: { key: 'base_price' } })
+
+  if (!existingPrice) {
+    await prisma.appSetting.create({
+      data: { key: 'base_price', value: '15000' },
+    })
+    console.log('Base price setting created: 15000')
+  }
 }
 
 main()

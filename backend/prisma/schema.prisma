@@ -81,3 +81,11 @@ model Trip {
 
   @@map("trips") // Mapea a la tabla "trips" en la base de datos
 }
+
+model AppSetting {
+  id    Int    @id @default(autoincrement())
+  key   String @unique
+  value String
+
+  @@map("app_settings")
+}
