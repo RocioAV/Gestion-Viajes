@@ -28,9 +28,12 @@ export async function createVehicle(input: CreateVehicleInput, currentLocation: 
 
   return prisma.vehicle.create({
     data: {
-      ...input,
+      license_plate: input.license_plate,
+      model: input.model,
+      passenger_capacity: input.passenger_capacity,
+      driver: { connect: { id: input.driver_id } },
       status: 'AVAILABLE',
-      current_location: currentLocation,
+      current_location: input.current_location ?? currentLocation,
     },
   })
 }
@@ -114,9 +117,14 @@ export async function updateVehicle(id: number, input: UpdateVehicleInput) {
     }
   }
 
+  const { driver_id, ...rest } = input
   const data = Object.fromEntries(
-    Object.entries(input).filter(([, value]) => value !== undefined),
-  )
+    Object.entries(rest).filter(([, value]) => value !== undefined),
+  ) as Record<string, unknown>
+
+  if (driver_id !== undefined) {
+    data.driver = { connect: { id: driver_id } }
+  }
 
   return prisma.vehicle.update({
     where: { id },
