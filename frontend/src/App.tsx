@@ -1,6 +1,7 @@
 import { Route, Routes } from 'react-router-dom'
 import { ToastContainer } from 'react-toastify'
 import Registro from './pages/admin/Registro'
+import CrearDriverVehicle from './pages/drivers/CrearDriverVehicle'
 import Home from './pages/Home'
 import Login from './pages/Login'
 import RecuperarPassword from './pages/RecuperarPassword'
@@ -13,6 +14,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/admin/registro" element={<Registro />} />
+          <Route path="/drivers/registro" element={<CrearDriverVehicle />} />
           <Route path="/recuperar-password" element={<RecuperarPassword />} />
         </Routes>
       </div>
