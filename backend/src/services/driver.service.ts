@@ -81,3 +81,30 @@ export async function deleteDriver(id: number) {
 
   return prisma.driver.delete({ where: { id } })
 }
+
+export async function toggleAvailability(id: number) {
+  const driver = await prisma.driver.findUnique({
+    where: { id },
+    include: { vehicle: true },
+  })
+
+  if (!driver) {
+    throw Object.assign(new Error('Chofer no encontrado'), { status: 404 })
+  }
+
+  if (!driver.vehicle) {
+    throw Object.assign(new Error('El chofer no tiene un vehículo asociado'), { status: 400 })
+  }
+
+  const newStatus = driver.vehicle.status === 'AVAILABLE' ? 'OUT_OF_SERVICE' : 'AVAILABLE'
+
+  await prisma.vehicle.update({
+    where: { id: driver.vehicle.id },
+    data: { status: newStatus },
+  })
+
+  return prisma.driver.findUnique({
+    where: { id },
+    include: { vehicle: true },
+  })
+}

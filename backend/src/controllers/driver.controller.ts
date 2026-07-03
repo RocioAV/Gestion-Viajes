@@ -1,5 +1,5 @@
 import type { NextFunction, Request, Response } from 'express'
-import { createDriver, deleteDriver, getDriverById, getDrivers, updateDriver } from '../services/driver.service'
+import { createDriver, deleteDriver, getDriverById, getDrivers, toggleAvailability, updateDriver } from '../services/driver.service'
 
 export async function handleCreateDriver(req: Request, res: Response, next: NextFunction) {
   try {
@@ -48,6 +48,17 @@ export async function handleDeleteDriver(req: Request, res: Response, next: Next
     const id = Number(req.params.id)
     await deleteDriver(id)
     res.json({ message: 'Chofer eliminado exitosamente' })
+  }
+  catch (error) {
+    next(error)
+  }
+}
+
+export async function handleToggleAvailability(req: Request, res: Response, next: NextFunction) {
+  try {
+    const id = Number(req.params.id)
+    const driver = await toggleAvailability(id)
+    res.json({ message: 'Disponibilidad actualizada', driver })
   }
   catch (error) {
     next(error)
