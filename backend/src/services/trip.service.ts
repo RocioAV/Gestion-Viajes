@@ -1,4 +1,4 @@
-import type { CreateTripInput, TripFilters } from '../schemas/trip.schema'
+import type { AddPassengerInput, CreateTripInput, JoinQueueInput, QueueFilters, TripFilters } from '../schemas/trip.schema'
 import { prisma } from '../lib/prisma'
 
 function oppositeLocation(location: string): string {
@@ -13,6 +13,128 @@ async function getBasePriceFromSettings(): Promise<number> {
   }
 
   return Number(setting.value)
+}
+
+export async function joinQueue(input: JoinQueueInput, operator: { userId: number, assigned_location: string }) {
+  const vehicle = await prisma.vehicle.findUnique({
+    where: { id: input.vehicle_id },
+    include: { driver: true },
+  })
+
+  if (!vehicle) {
+    throw Object.assign(new Error('Vehículo no encontrado'), { status: 404 })
+  }
+
+  if (vehicle.status !== 'AVAILABLE') {
+    throw Object.assign(new Error('El vehículo no está disponible para ingresar a la cola'), { status: 400 })
+  }
+
+  if (vehicle.queue_entry_at) {
+    throw Object.assign(new Error('El vehículo ya está en la cola'), { status: 409 })
+  }
+
+  if (vehicle.current_location !== operator.assigned_location) {
+    throw Object.assign(new Error('El vehículo no está en la ubicación del operador'), { status: 400 })
+  }
+
+  const origin = vehicle.current_location
+  const destination = oppositeLocation(origin)
+  const pricePerPassenger = await getBasePriceFromSettings()
+
+  const [trip] = await prisma.$transaction([
+    prisma.trip.create({
+      data: {
+        vehicle_id: vehicle.id,
+        departure_operator_id: operator.userId,
+        origin,
+        destination,
+        occupied_seats: 0,
+        price_per_passenger: pricePerPassenger,
+        base_commission: 0,
+        status: 'PENDING',
+      },
+      include: {
+        vehicle: { include: { driver: true } },
+        departure_operator: true,
+      },
+    }),
+    prisma.vehicle.update({
+      where: { id: vehicle.id },
+      data: { queue_entry_at: new Date() },
+    }),
+  ])
+
+  return trip
+}
+
+export async function addPassenger(tripId: number, input: AddPassengerInput) {
+  const trip = await prisma.trip.findUnique({
+    where: { id: tripId },
+    include: { vehicle: true },
+  })
+
+  if (!trip) {
+    throw Object.assign(new Error('Viaje no encontrado'), { status: 404 })
+  }
+
+  if (trip.status !== 'PENDING') {
+    throw Object.assign(new Error('Solo se pueden agregar pasajeros a viajes en estado PENDING'), { status: 400 })
+  }
+
+  const newOccupied = trip.occupied_seats + input.count
+
+  if (newOccupied > trip.vehicle.passenger_capacity) {
+    throw Object.assign(
+      new Error(`No se pueden agregar ${input.count} pasajeros. Solo quedan ${trip.vehicle.passenger_capacity - trip.occupied_seats} asientos disponibles`),
+      { status: 400 },
+    )
+  }
+
+  const isFull = newOccupied === trip.vehicle.passenger_capacity
+
+  const [updatedTrip] = await prisma.$transaction([
+    prisma.trip.update({
+      where: { id: tripId },
+      data: {
+        occupied_seats: newOccupied,
+        ...(isFull && {
+          status: 'IN_PROGRESS',
+          departure_at: new Date(),
+        }),
+      },
+      include: {
+        vehicle: { include: { driver: true } },
+        departure_operator: true,
+      },
+    }),
+    ...(isFull
+      ? [
+          prisma.vehicle.update({
+            where: { id: trip.vehicle_id },
+            data: {
+              status: 'ON_TRIP',
+              queue_entry_at: null,
+            },
+          }),
+        ]
+      : []),
+  ])
+
+  return updatedTrip
+}
+
+export async function getQueue(filters: QueueFilters) {
+  return prisma.trip.findMany({
+    where: {
+      status: 'PENDING',
+      destination: filters.destination,
+    },
+    include: {
+      vehicle: { include: { driver: true } },
+      departure_operator: true,
+    },
+    orderBy: { departure_at: 'asc' },
+  })
 }
 
 export async function createTrip(input: CreateTripInput, operator: { userId: number, assigned_location: string }) {
@@ -109,7 +231,7 @@ export async function completeTrip(tripId: number, operator: { userId: number, a
       data: {
         status: 'AVAILABLE',
         current_location: trip.destination,
-        queue_entry_at: new Date(),
+        queue_entry_at: null,
       },
     }),
   ])
@@ -144,7 +266,7 @@ export async function cancelTrip(tripId: number) {
       where: { id: trip.vehicle_id },
       data: {
         status: 'AVAILABLE',
-        queue_entry_at: new Date(),
+        queue_entry_at: null,
       },
     }),
   ])
