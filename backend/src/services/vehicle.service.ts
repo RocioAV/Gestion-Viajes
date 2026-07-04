@@ -1,6 +1,31 @@
 import type { CreateVehicleInput, UpdateVehicleInput, VehicleFilters } from '../schemas/vehicle.schema'
 import { prisma } from '../lib/prisma'
 
+type VehicleStatus = 'AVAILABLE' | 'OUT_OF_SERVICE'
+
+async function updateVehicleStatus(id: number, status: VehicleStatus) {
+  const vehicle = await prisma.vehicle.findUnique({
+    where: { id },
+  })
+
+  if (!vehicle) {
+    throw Object.assign(new Error('Vehículo no encontrado'), { status: 404 })
+  }
+
+  if (vehicle.status === 'ON_TRIP') {
+    throw Object.assign(new Error('No se puede modificar el estado de un vehículo en viaje'), { status: 400 })
+  }
+
+  if (vehicle.status === status) {
+    return vehicle
+  }
+
+  return prisma.vehicle.update({
+    where: { id },
+    data: { status },
+  })
+}
+
 export async function createVehicle(input: CreateVehicleInput, currentLocation: string) {
   const driver = await prisma.driver.findUnique({
     where: { id: input.driver_id },
@@ -140,4 +165,12 @@ export async function deleteVehicle(id: number) {
   }
 
   return prisma.vehicle.delete({ where: { id } })
+}
+
+export async function setVehicleAvailable(id: number) {
+  return updateVehicleStatus(id, 'AVAILABLE')
+}
+
+export async function setVehicleOutOfService(id: number) {
+  return updateVehicleStatus(id, 'OUT_OF_SERVICE')
 }

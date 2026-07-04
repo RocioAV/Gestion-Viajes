@@ -1,7 +1,7 @@
 import type { NextFunction, Request, Response } from 'express'
 import * as v from 'valibot'
 import { vehicleFiltersSchema } from '../schemas/vehicle.schema'
-import { createVehicle, deleteVehicle, getVehicleById, getVehicles, updateVehicle } from '../services/vehicle.service'
+import { createVehicle, deleteVehicle, getVehicleById, getVehicles, setVehicleAvailable, setVehicleOutOfService, updateVehicle } from '../services/vehicle.service'
 
 export async function handleCreateVehicle(req: Request, res: Response, next: NextFunction) {
   try {
@@ -46,6 +46,28 @@ export async function handleUpdateVehicle(req: Request, res: Response, next: Nex
     const id = Number(req.params.id)
     const vehicle = await updateVehicle(id, req.body)
     res.json({ message: 'Vehículo actualizado exitosamente', vehicle })
+  }
+  catch (error) {
+    next(error)
+  }
+}
+
+export async function handleSetVehicleAvailable(req: Request, res: Response, next: NextFunction) {
+  try {
+    const id = Number(req.params.id)
+    const vehicle = await setVehicleAvailable(id)
+    res.json({ message: 'Vehículo marcado como disponible', vehicle })
+  }
+  catch (error) {
+    next(error)
+  }
+}
+
+export async function handleSetVehicleOutOfService(req: Request, res: Response, next: NextFunction) {
+  try {
+    const id = Number(req.params.id)
+    const vehicle = await setVehicleOutOfService(id)
+    res.json({ message: 'Vehículo marcado fuera de servicio', vehicle })
   }
   catch (error) {
     next(error)

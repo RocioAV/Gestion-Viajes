@@ -1,7 +1,7 @@
 import type { NextFunction, Request, Response } from 'express'
 import * as v from 'valibot'
-import { tripFiltersSchema } from '../schemas/trip.schema'
-import { cancelTrip, completeTrip, createTrip, getTrips } from '../services/trip.service'
+import { queueFiltersSchema, tripFiltersSchema } from '../schemas/trip.schema'
+import { addPassenger, cancelTrip, completeTrip, createTrip, getQueue, getTrips, joinQueue } from '../services/trip.service'
 
 export async function handleCreateTrip(req: Request, res: Response, next: NextFunction) {
   try {
@@ -10,6 +10,52 @@ export async function handleCreateTrip(req: Request, res: Response, next: NextFu
       assigned_location: req.user!.assigned_location!,
     })
     res.status(201).json({ message: 'Viaje creado exitosamente', trip })
+  }
+  catch (error) {
+    next(error)
+  }
+}
+
+export async function handleJoinQueue(req: Request, res: Response, next: NextFunction) {
+  try {
+    const trip = await joinQueue(req.body, {
+      userId: req.user!.userId,
+      assigned_location: req.user!.assigned_location!,
+    })
+    res.status(201).json({ message: 'Vehículo ingresado a la cola exitosamente', trip })
+  }
+  catch (error) {
+    next(error)
+  }
+}
+
+export async function handleGetQueue(req: Request, res: Response, next: NextFunction) {
+  try {
+    const result = v.safeParse(queueFiltersSchema, {
+      destination: req.query.destination,
+    })
+
+    if (!result.success) {
+      res.status(400).json({
+        error: 'Validation failed',
+        issues: v.flatten(result.issues),
+      })
+      return
+    }
+
+    const trips = await getQueue(result.output)
+    res.json({ trips })
+  }
+  catch (error) {
+    next(error)
+  }
+}
+
+export async function handleAddPassenger(req: Request, res: Response, next: NextFunction) {
+  try {
+    const id = Number(req.params.id)
+    const trip = await addPassenger(id, req.body)
+    res.json({ message: 'Pasajeros agregados exitosamente', trip })
   }
   catch (error) {
     next(error)
