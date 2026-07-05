@@ -1,6 +1,7 @@
 import type { TripFilters, TripWithRelations } from '../../types/operator'
 import { useEffect, useState } from 'react'
 import { toast } from 'react-toastify'
+import { getUser } from '../../lib/auth'
 import { cancelTrip, completeTrip, getTrips } from '../../services/operator.service'
 
 const SELECT_CLASS = 'border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:ring-2 focus:ring-primary focus:border-primary outline-none transition bg-white cursor-pointer'
@@ -31,6 +32,7 @@ function formatDate(dateStr: string) {
 }
 
 function TripsPage() {
+  const user = getUser()
   const [trips, setTrips] = useState<TripWithRelations[]>([])
   const [loading, setLoading] = useState(true)
   const [actingId, setActingId] = useState<number | null>(null)
@@ -56,11 +58,15 @@ function TripsPage() {
   }, [filters])
 
   async function handleComplete(tripId: number) {
+    if (!window.confirm('¿Estas seguro de completar este viaje?')) return
+
     setActingId(tripId)
     try {
       const data = await completeTrip(tripId)
       setTrips(prev =>
-        prev.map(t => (t.id === tripId ? data.trip : t)),
+        prev.map(t => t.id === tripId
+          ? { ...data.trip, vehicle: { ...t.vehicle, ...data.trip.vehicle } }
+          : t),
       )
       toast.success(data.message)
     }
@@ -73,11 +79,15 @@ function TripsPage() {
   }
 
   async function handleCancel(tripId: number) {
+    if (!window.confirm('¿Estas seguro de cancelar este viaje?')) return
+
     setActingId(tripId)
     try {
       const data = await cancelTrip(tripId)
       setTrips(prev =>
-        prev.map(t => (t.id === tripId ? data.trip : t)),
+        prev.map(t => t.id === tripId
+          ? { ...data.trip, vehicle: { ...t.vehicle, ...data.trip.vehicle } }
+          : t),
       )
       toast.success(data.message)
     }
@@ -157,9 +167,10 @@ function TripsPage() {
             )
           : (
               <div className="space-y-3">
-                {trips.map((trip) => {
+                  {trips.map((trip) => {
                   const isActing = actingId === trip.id
                   const isActive = trip.status === 'IN_PROGRESS'
+                  const isAtDestination = trip.destination === user?.assigned_location
 
                   return (
                     <div
@@ -215,14 +226,16 @@ function TripsPage() {
                         {isActive
                           && (
                             <div className="flex gap-2">
-                              <button
-                                type="button"
-                                onClick={() => handleComplete(trip.id)}
-                                disabled={isActing}
-                                className="cursor-pointer rounded-lg bg-success/10 px-4 py-2 text-sm font-medium text-success transition-colors hover:bg-success/20 disabled:cursor-not-allowed disabled:opacity-50"
-                              >
-                                {isActing ? '...' : 'Completar'}
-                              </button>
+                              {isAtDestination && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleComplete(trip.id)}
+                                  disabled={isActing}
+                                  className="cursor-pointer rounded-lg bg-success/10 px-4 py-2 text-sm font-medium text-success transition-colors hover:bg-success/20 disabled:cursor-not-allowed disabled:opacity-50"
+                                >
+                                  {isActing ? '...' : 'Completar'}
+                                </button>
+                              )}
                               <button
                                 type="button"
                                 onClick={() => handleCancel(trip.id)}

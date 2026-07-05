@@ -42,9 +42,9 @@ export async function joinQueue(
 }
 
 export async function getQueue(
-  destination: string,
+  origin: string,
 ): Promise<{ trips: TripWithRelations[] }> {
-  return apiClient(`/trips/queue?destination=${encodeURIComponent(destination)}`)
+  return getTrips({ status: 'PENDING', origin })
 }
 
 export async function addPassenger(

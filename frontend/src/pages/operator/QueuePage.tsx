@@ -4,8 +4,6 @@ import { toast } from 'react-toastify'
 import { getUser } from '../../lib/auth'
 import { addPassenger, getQueue } from '../../services/operator.service'
 
-const INPUT_CLASS = 'w-20 border border-gray-300 rounded-lg px-3 py-1.5 text-sm text-gray-900 focus:ring-2 focus:ring-primary focus:border-primary outline-none transition text-center'
-
 function formatTime(dateStr: string) {
   const diff = Date.now() - new Date(dateStr).getTime()
   const mins = Math.floor(diff / 60000)
@@ -16,17 +14,16 @@ function formatTime(dateStr: string) {
 
 function QueuePage() {
   const user = getUser()
-  const destination = user?.assigned_location === 'JUJUY' ? 'JUJUY' : 'SALTA'
+  const origin = user?.assigned_location === 'JUJUY' ? 'JUJUY' : 'SALTA'
 
   const [trips, setTrips] = useState<TripWithRelations[]>([])
   const [loading, setLoading] = useState(true)
   const [actingId, setActingId] = useState<number | null>(null)
-  const [passengerCounts, setPassengerCounts] = useState<Record<number, number>>({})
 
   async function loadQueue() {
     setLoading(true)
     try {
-      const data = await getQueue(destination)
+      const data = await getQueue(origin)
       setTrips(data.trips)
     }
     catch {
@@ -39,18 +36,12 @@ function QueuePage() {
 
   useEffect(() => {
     loadQueue()
-  }, [destination])
+  }, [origin])
 
-  async function handleAddPassengers(tripId: number) {
-    const count = passengerCounts[tripId]
-    if (!count || count < 1) {
-      toast.warning('Ingresa la cantidad de pasajeros')
-      return
-    }
-
+  async function handleAddPassenger(tripId: number) {
     setActingId(tripId)
     try {
-      const data = await addPassenger(tripId, { count })
+      const data = await addPassenger(tripId, { count: 1 })
       if (data.trip.status === 'IN_PROGRESS') {
         setTrips(prev => prev.filter(t => t.id !== tripId))
         toast.success('Vehiculo completo! El viaje ha comenzado')
@@ -59,12 +50,11 @@ function QueuePage() {
         setTrips(prev =>
           prev.map(t => (t.id === tripId ? data.trip : t)),
         )
-        toast.success(`Se agregaron ${count} pasajero(s)`)
+        toast.success('Se agrego 1 pasajero')
       }
-      setPassengerCounts(prev => ({ ...prev, [tripId]: 0 }))
     }
     catch {
-      toast.error('Error al agregar pasajeros')
+      toast.error('Error al agregar pasajero')
     }
     finally {
       setActingId(null)
@@ -76,9 +66,9 @@ function QueuePage() {
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-gray-900">Cola de Vehiculos</h1>
         <p className="mt-1 text-sm text-gray-500">
-          Vehiculos en espera con destino a
+          Vehiculos en espera para salir desde
           {' '}
-          <span className="font-medium text-gray-700">{destination}</span>
+          <span className="font-medium text-gray-700">{origin}</span>
         </p>
       </div>
 
@@ -99,10 +89,9 @@ function QueuePage() {
             )
           : (
               <div className="space-y-3">
-                {trips.map((trip) => {
+                  {trips.map((trip) => {
                   const isActing = actingId === trip.id
                   const remaining = trip.vehicle.passenger_capacity - trip.occupied_seats
-                  const count = passengerCounts[trip.id] ?? 1
 
                   return (
                     <div
@@ -162,32 +151,20 @@ function QueuePage() {
                           </div>
                         </div>
 
-                        <div className="flex items-center gap-2">
-                          <input
-                            type="number"
-                            min={1}
-                            max={remaining}
-                            value={count}
-                            onChange={e => setPassengerCounts(prev => ({
-                              ...prev,
-                              [trip.id]: Number(e.target.value),
-                            }))}
-                            disabled={isActing}
-                            className={INPUT_CLASS}
-                          />
-                          <button
-                            type="button"
-                            onClick={() => handleAddPassengers(trip.id)}
-                            disabled={isActing || remaining === 0}
-                            className="cursor-pointer rounded-lg bg-primary/10 px-4 py-2 text-sm font-medium text-primary transition-colors hover:bg-primary/20 disabled:cursor-not-allowed disabled:opacity-50"
-                          >
-                            {isActing
-                              ? '...'
-                              : remaining === 0
-                                ? 'Completo'
-                                : 'Agregar'}
-                          </button>
-                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleAddPassenger(trip.id)}
+                          disabled={isActing || remaining === 0}
+                          className="cursor-pointer rounded-lg bg-primary/10 px-4 py-2 text-sm font-medium text-primary transition-colors hover:bg-primary/20 disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                          {isActing
+                            ? '...'
+                            : remaining === 0
+                              ? 'Completo'
+                              : remaining === 1
+                                ? 'Agregar Pasajero (ultimo asiento)'
+                                : 'Agregar Pasajero'}
+                        </button>
                       </div>
 
                       {remaining > 0 && (
