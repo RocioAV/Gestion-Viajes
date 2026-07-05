@@ -5,7 +5,8 @@ import Registro from './pages/admin/Registro'
 import CrearDriverVehicle from './pages/drivers/CrearDriverVehicle'
 import Home from './pages/Home'
 import Login from './pages/Login'
-import CreateTripPage from './pages/operator/CreateTripPage'
+import JoinQueuePage from './pages/operator/JoinQueuePage'
+import QueuePage from './pages/operator/QueuePage'
 import DriversPage from './pages/operator/DriversPage'
 import TripsPage from './pages/operator/TripsPage'
 import RecuperarPassword from './pages/RecuperarPassword'
@@ -32,7 +33,8 @@ function App() {
           <Route path="/operador" element={<OperatorRoutes />}>
             <Route index element={<Navigate to="choferes" replace />} />
             <Route path="choferes" element={<DriversPage />} />
-            <Route path="crear-viaje" element={<CreateTripPage />} />
+            <Route path="ingresar-cola" element={<JoinQueuePage />} />
+            <Route path="cola" element={<QueuePage />} />
             <Route path="viajes" element={<TripsPage />} />
           </Route>
         </Routes>

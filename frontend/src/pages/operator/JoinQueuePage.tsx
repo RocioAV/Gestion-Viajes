@@ -4,12 +4,12 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import { getUser } from '../../lib/auth'
-import { createTrip, getAvailableVehicles } from '../../services/operator.service'
+import { getAvailableVehicles, joinQueue } from '../../services/operator.service'
 
 const INPUT_CLASS = 'w-full border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-primary focus:border-primary outline-none transition'
 const SELECT_CLASS = 'w-full border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 focus:ring-2 focus:ring-primary focus:border-primary outline-none transition bg-white cursor-pointer'
 
-function CreateTripPage() {
+function JoinQueuePage() {
   const navigate = useNavigate()
   const user = getUser()
   const origin = user?.assigned_location === 'JUJUY' ? 'JUJUY' : 'SALTA'
@@ -20,10 +20,6 @@ function CreateTripPage() {
   const [submitting, setSubmitting] = useState(false)
 
   const [vehicleId, setVehicleId] = useState<number>(0)
-  const [occupiedSeats, setOccupiedSeats] = useState<number>(1)
-
-  const selectedVehicle = vehicles.find(v => v.id === vehicleId)
-  const maxSeats = selectedVehicle?.passenger_capacity ?? 1
 
   useEffect(() => {
     async function loadVehicles() {
@@ -50,19 +46,14 @@ function CreateTripPage() {
       return
     }
 
-    if (occupiedSeats < 1) {
-      toast.warning('Debe haber al menos 1 asiento ocupado')
-      return
-    }
-
     setSubmitting(true)
     try {
-      await createTrip({ vehicle_id: vehicleId, occupied_seats: occupiedSeats })
-      toast.success('Viaje creado exitosamente')
-      navigate('/operador/viajes')
+      await joinQueue({ vehicle_id: vehicleId })
+      toast.success('Vehiculo ingresado a la cola exitosamente')
+      navigate('/operador/cola')
     }
     catch {
-      toast.error('Error al crear el viaje')
+      toast.error('Error al ingresar el vehiculo a la cola')
     }
     finally {
       setSubmitting(false)
@@ -80,9 +71,9 @@ function CreateTripPage() {
   return (
     <div>
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Crear Viaje</h1>
+        <h1 className="text-2xl font-bold text-gray-900">Ingresar a Cola</h1>
         <p className="mt-1 text-sm text-gray-500">
-          Selecciona un vehiculo y la cantidad de pasajeros
+          Selecciona un vehiculo disponible para ingresarlo a la cola de salida
         </p>
       </div>
 
@@ -115,10 +106,7 @@ function CreateTripPage() {
                     <select
                       id="vehicle"
                       value={vehicleId || ''}
-                      onChange={(e) => {
-                        setVehicleId(Number(e.target.value))
-                        setOccupiedSeats(1)
-                      }}
+                      onChange={e => setVehicleId(Number(e.target.value))}
                       className={SELECT_CLASS}
                     >
                       <option value="" disabled>Seleccionar vehiculo</option>
@@ -135,31 +123,6 @@ function CreateTripPage() {
                     </select>
                   )}
             </div>
-
-            <div>
-              <label htmlFor="seats" className="mb-1.5 block text-sm font-medium text-gray-700">
-                Asientos ocupados
-              </label>
-              <input
-                id="seats"
-                type="number"
-                min={1}
-                max={maxSeats}
-                value={occupiedSeats}
-                onChange={e => setOccupiedSeats(Number(e.target.value))}
-                disabled={!vehicleId}
-                className={vehicleId ? INPUT_CLASS : `${INPUT_CLASS} bg-gray-50 cursor-not-allowed`}
-              />
-              {selectedVehicle && (
-                <p className="mt-1 text-xs text-gray-500">
-                  Maximo:
-                  {' '}
-                  {selectedVehicle.passenger_capacity}
-                  {' '}
-                  asientos
-                </p>
-              )}
-            </div>
           </div>
 
           <button
@@ -167,7 +130,7 @@ function CreateTripPage() {
             disabled={!vehicleId || submitting}
             className="mt-6 w-full cursor-pointer rounded-lg bg-primary py-2.5 text-sm font-medium text-white transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            {submitting ? 'Creando viaje...' : 'Crear viaje'}
+            {submitting ? 'Ingresando...' : 'Ingresar a Cola'}
           </button>
         </form>
       </div>
@@ -175,4 +138,4 @@ function CreateTripPage() {
   )
 }
 
-export default CreateTripPage
+export default JoinQueuePage

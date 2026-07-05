@@ -1,7 +1,7 @@
 import type { FormEvent } from 'react'
 import type { LoginFormData } from '../validations/auth'
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import { safeParse } from 'valibot'
 import FormLayout from '../components/FormLayout'
@@ -28,6 +28,7 @@ function getFieldErrors(data: LoginFormData): FieldErrors {
 const INITIAL_FORM: LoginFormData = { email: '', password: '' }
 
 function Login() {
+  const navigate = useNavigate()
   const [form, setForm] = useState<LoginFormData>(INITIAL_FORM)
   const [touched, setTouched] = useState<TouchedFields>({})
   const [loading, setLoading] = useState(false)
@@ -58,8 +59,11 @@ function Login() {
     setLoading(true)
 
     try {
-      await loginUser(form)
-      toast.success('Inicio de sesión exitoso')
+      const response = await loginUser(form)
+      toast.success(`Bienvenido, ${response.result.user.name}`)
+      if (response.result.user.role === 'OPERATOR') {
+        navigate('/operador/choferes')
+      }
     }
     catch (err) {
       const message = err instanceof Error ? err.message : 'Error inesperado'

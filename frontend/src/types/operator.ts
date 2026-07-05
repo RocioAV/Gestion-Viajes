@@ -40,7 +40,7 @@ export interface Trip {
   occupied_seats: number
   price_per_passenger: string
   base_commission: string
-  status: 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED'
+  status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED'
   departure_at: string
   arrival_at: string | null
 }
@@ -58,8 +58,16 @@ export interface CreateTripBody {
   base_commission?: number
 }
 
+export interface JoinQueueBody {
+  vehicle_id: number
+}
+
+export interface AddPassengerBody {
+  count: number
+}
+
 export interface TripFilters {
-  status?: 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED'
+  status?: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED'
   origin?: 'JUJUY' | 'SALTA'
   destination?: 'JUJUY' | 'SALTA'
   date_from?: string
