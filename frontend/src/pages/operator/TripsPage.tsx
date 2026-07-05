@@ -7,13 +7,15 @@ const SELECT_CLASS = 'border border-gray-300 rounded-lg px-3 py-2 text-sm text-g
 const INPUT_CLASS = 'border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:ring-2 focus:ring-primary focus:border-primary outline-none transition'
 
 const STATUS_LABELS: Record<string, string> = {
+  PENDING: 'En cola',
   IN_PROGRESS: 'En progreso',
   COMPLETED: 'Completado',
   CANCELLED: 'Cancelado',
 }
 
 const STATUS_STYLES: Record<string, string> = {
-  IN_PROGRESS: 'bg-warning/10 text-warning',
+  PENDING: 'bg-warning/10 text-warning',
+  IN_PROGRESS: 'bg-info/10 text-info',
   COMPLETED: 'bg-success/10 text-success',
   CANCELLED: 'bg-error/10 text-error',
 }
@@ -106,6 +108,7 @@ function TripsPage() {
           className={SELECT_CLASS}
         >
           <option value="">Todos los estados</option>
+          <option value="PENDING">En cola</option>
           <option value="IN_PROGRESS">En progreso</option>
           <option value="COMPLETED">Completado</option>
           <option value="CANCELLED">Cancelado</option>

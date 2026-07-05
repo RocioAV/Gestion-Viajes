@@ -15,13 +15,24 @@ const NAV_ITEMS = [
     ),
   },
   {
-    to: '/operador/crear-viaje',
-    label: 'Crear Viaje',
+    to: '/operador/ingresar-cola',
+    label: 'Ingresar a Cola',
     icon: (
       <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="12" cy="12" r="10" />
-        <line x1="12" x2="12" y1="8" y2="16" />
-        <line x1="8" x2="16" y1="12" y2="12" />
+        <line x1="12" x2="12" y1="5" y2="19" />
+        <polyline points="19 12 12 19 5 12" />
+      </svg>
+    ),
+  },
+  {
+    to: '/operador/cola',
+    label: 'Cola',
+    icon: (
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="3" y="3" width="7" height="7" />
+        <rect x="14" y="3" width="7" height="7" />
+        <rect x="14" y="14" width="7" height="7" />
+        <rect x="3" y="14" width="7" height="7" />
       </svg>
     ),
   },
