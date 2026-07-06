@@ -142,7 +142,7 @@ function CrearDriverVehicle() {
   }
 
   return (
-    <FormLayout backTo="/">
+    <FormLayout backTo="/admin/viajes">
       <h1 className="text-2xl font-bold text-gray-900 mb-1">Registro de Chofer y Vehículo</h1>
       <p className="text-sm text-gray-500 mb-6">
         Completá los datos para crear un nuevo chofer y su vehículo
