@@ -1,4 +1,4 @@
-import type { AddPassengerBody, CreateTripBody, DriverWithVehicle, JoinQueueBody, TripFilters, TripWithRelations, Vehicle } from '../types/operator'
+import type { AddPassengerBody, CreateTripBody, DriverWithVehicle, JoinQueueBody, RemovePassengerBody, TripFilters, TripWithRelations, Vehicle } from '../types/operator'
 import { apiClient } from '../lib/api'
 
 export async function getDrivers(): Promise<{ drivers: DriverWithVehicle[] }> {
@@ -52,6 +52,16 @@ export async function addPassenger(
   data: AddPassengerBody,
 ): Promise<{ message: string, trip: TripWithRelations }> {
   return apiClient(`/trips/${tripId}/passengers`, {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  })
+}
+
+export async function removePassenger(
+  tripId: number,
+  data: RemovePassengerBody,
+): Promise<{ message: string, trip: TripWithRelations }> {
+  return apiClient(`/trips/${tripId}/passengers/remove`, {
     method: 'PATCH',
     body: JSON.stringify(data),
   })

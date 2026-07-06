@@ -66,6 +66,10 @@ export interface AddPassengerBody {
   count: number
 }
 
+export interface RemovePassengerBody {
+  count: number
+}
+
 export interface TripFilters {
   status?: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED'
   origin?: 'JUJUY' | 'SALTA'

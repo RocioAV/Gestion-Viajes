@@ -1,4 +1,4 @@
-import type { AddPassengerInput, CreateTripInput, JoinQueueInput, QueueFilters, TripFilters } from '../schemas/trip.schema'
+import type { AddPassengerInput, CreateTripInput, JoinQueueInput, QueueFilters, RemovePassengerInput, TripFilters } from '../schemas/trip.schema'
 import { prisma } from '../lib/prisma'
 
 function oppositeLocation(location: string): string {
@@ -118,6 +118,36 @@ export async function addPassenger(tripId: number, input: AddPassengerInput) {
           }),
         ]
       : []),
+  ])
+
+  return updatedTrip
+}
+
+export async function removePassenger(tripId: number, input: RemovePassengerInput) {
+  const trip = await prisma.trip.findUnique({
+    where: { id: tripId },
+    include: { vehicle: { include: { driver: true } } },
+  })
+
+  if (!trip) {
+    throw Object.assign(new Error('Viaje no encontrado'), { status: 404 })
+  }
+
+  if (trip.status !== 'PENDING') {
+    throw Object.assign(new Error('Solo se pueden quitar pasajeros a viajes en estado PENDING'), { status: 400 })
+  }
+
+  const newOccupied = Math.max(0, trip.occupied_seats - input.count)
+
+  const [updatedTrip] = await prisma.$transaction([
+    prisma.trip.update({
+      where: { id: tripId },
+      data: { occupied_seats: newOccupied },
+      include: {
+        vehicle: { include: { driver: true } },
+        departure_operator: true,
+      },
+    }),
   ])
 
   return updatedTrip

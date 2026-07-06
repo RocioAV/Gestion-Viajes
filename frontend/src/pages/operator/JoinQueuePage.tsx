@@ -4,9 +4,8 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import { getUser } from '../../lib/auth'
-import { getAvailableVehicles, joinQueue } from '../../services/operator.service'
+import { getAvailableVehicles, getQueue, joinQueue } from '../../services/operator.service'
 
-const INPUT_CLASS = 'w-full border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-primary focus:border-primary outline-none transition'
 const SELECT_CLASS = 'w-full border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 focus:ring-2 focus:ring-primary focus:border-primary outline-none transition bg-white cursor-pointer'
 
 function JoinQueuePage() {
@@ -24,8 +23,12 @@ function JoinQueuePage() {
   useEffect(() => {
     async function loadVehicles() {
       try {
-        const data = await getAvailableVehicles(origin)
-        setVehicles(data.vehicles)
+        const [avData, queueData] = await Promise.all([
+          getAvailableVehicles(origin),
+          getQueue(origin),
+        ])
+        const queuedIds = new Set(queueData.trips.map(t => t.vehicle_id))
+        setVehicles(avData.vehicles.filter(v => !queuedIds.has(v.id)))
       }
       catch {
         toast.error('Error al cargar los vehiculos disponibles')

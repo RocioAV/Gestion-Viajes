@@ -1,7 +1,7 @@
 import type { NextFunction, Request, Response } from 'express'
 import * as v from 'valibot'
 import { queueFiltersSchema, tripFiltersSchema } from '../schemas/trip.schema'
-import { addPassenger, cancelTrip, completeTrip, createTrip, getQueue, getTrips, joinQueue } from '../services/trip.service'
+import { addPassenger, cancelTrip, completeTrip, createTrip, getQueue, getTrips, joinQueue, removePassenger } from '../services/trip.service'
 
 export async function handleCreateTrip(req: Request, res: Response, next: NextFunction) {
   try {
@@ -56,6 +56,17 @@ export async function handleAddPassenger(req: Request, res: Response, next: Next
     const id = Number(req.params.id)
     const trip = await addPassenger(id, req.body)
     res.json({ message: 'Pasajeros agregados exitosamente', trip })
+  }
+  catch (error) {
+    next(error)
+  }
+}
+
+export async function handleRemovePassenger(req: Request, res: Response, next: NextFunction) {
+  try {
+    const id = Number(req.params.id)
+    const trip = await removePassenger(id, req.body)
+    res.json({ message: 'Pasajeros quitados exitosamente', trip })
   }
   catch (error) {
     next(error)
