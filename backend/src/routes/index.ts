@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import { authRouter } from './auth.routes'
 import { driverRouter } from './driver.routes'
+import { publicRouter } from './public.routes'
 import { exportRouter } from './export.routes'
 import { settingRouter } from './setting.routes'
 import { tripRouter } from './trip.routes'
@@ -10,6 +11,7 @@ export const apiRouter: ReturnType<typeof Router> = Router()
 
 apiRouter.use('/auth', authRouter)
 apiRouter.use('/drivers', driverRouter)
+apiRouter.use('/public', publicRouter)
 apiRouter.use('/vehicles', vehicleRouter)
 apiRouter.use('/trips', tripRouter)
 apiRouter.use('/settings', settingRouter)

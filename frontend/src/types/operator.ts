@@ -70,6 +70,11 @@ export interface RemovePassengerBody {
   count: number
 }
 
+export interface NextTripResponse {
+  jujuy: TripWithRelations | null
+  salta: TripWithRelations | null
+}
+
 export interface TripFilters {
   status?: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED'
   origin?: 'JUJUY' | 'SALTA'
