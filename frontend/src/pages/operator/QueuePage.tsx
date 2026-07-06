@@ -2,7 +2,7 @@ import type { TripWithRelations } from '../../types/operator'
 import { useEffect, useState } from 'react'
 import { toast } from 'react-toastify'
 import { getUser } from '../../lib/auth'
-import { addPassenger, getQueue } from '../../services/operator.service'
+import { addPassenger, getQueue, removePassenger } from '../../services/operator.service'
 
 function formatTime(dateStr: string) {
   const diff = Date.now() - new Date(dateStr).getTime()
@@ -61,6 +61,23 @@ function QueuePage() {
     }
   }
 
+  async function handleRemovePassenger(tripId: number) {
+    setActingId(tripId)
+    try {
+      const data = await removePassenger(tripId, { count: 1 })
+      setTrips(prev =>
+        prev.map(t => (t.id === tripId ? data.trip : t)),
+      )
+      toast.success('Se quito 1 pasajero')
+    }
+    catch {
+      toast.error('Error al quitar pasajero')
+    }
+    finally {
+      setActingId(null)
+    }
+  }
+
   return (
     <div>
       <div className="mb-8">
@@ -89,14 +106,17 @@ function QueuePage() {
             )
           : (
               <div className="space-y-3">
-                  {trips.map((trip) => {
+                {trips.map((trip, index) => {
+                  const isFirst = index === 0
                   const isActing = actingId === trip.id
                   const remaining = trip.vehicle.passenger_capacity - trip.occupied_seats
 
                   return (
                     <div
                       key={trip.id}
-                      className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm"
+                      className={`rounded-xl border bg-white p-5 shadow-sm ${
+                        isFirst ? 'border-primary/30 ring-1 ring-primary/20' : 'border-gray-200'
+                      }`}
                     >
                       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                         <div className="space-y-1">
@@ -104,8 +124,10 @@ function QueuePage() {
                             <h3 className="text-sm font-semibold text-gray-900">
                               {trip.vehicle.license_plate}
                             </h3>
-                            <span className="inline-flex items-center rounded-full bg-warning/10 px-2.5 py-0.5 text-xs font-medium text-warning">
-                              En cola
+                            <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                              isFirst ? 'bg-primary/10 text-primary' : 'bg-gray-100 text-gray-500'
+                            }`}>
+                              {isFirst ? 'En cola (primero)' : 'En espera'}
                             </span>
                             <span className="text-xs text-gray-400">
                               {formatTime(trip.departure_at)}
@@ -151,23 +173,33 @@ function QueuePage() {
                           </div>
                         </div>
 
-                        <button
-                          type="button"
-                          onClick={() => handleAddPassenger(trip.id)}
-                          disabled={isActing || remaining === 0}
-                          className="cursor-pointer rounded-lg bg-primary/10 px-4 py-2 text-sm font-medium text-primary transition-colors hover:bg-primary/20 disabled:cursor-not-allowed disabled:opacity-50"
-                        >
-                          {isActing
-                            ? '...'
-                            : remaining === 0
-                              ? 'Completo'
-                              : remaining === 1
-                                ? 'Agregar Pasajero (ultimo asiento)'
-                                : 'Agregar Pasajero'}
-                        </button>
+                        {isFirst && (
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => handleRemovePassenger(trip.id)}
+                              disabled={isActing || trip.occupied_seats === 0}
+                              className="cursor-pointer rounded-lg bg-error/10 px-4 py-2 text-sm font-medium text-error transition-colors hover:bg-error/20 disabled:cursor-not-allowed disabled:opacity-50"
+                            >
+                              {isActing ? '...' : 'Remover'}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleAddPassenger(trip.id)}
+                              disabled={isActing || remaining === 0}
+                              className="cursor-pointer rounded-lg bg-primary/10 px-4 py-2 text-sm font-medium text-success transition-colors hover:bg-primary/20 disabled:cursor-not-allowed disabled:opacity-50"
+                            >
+                              {isActing
+                                ? '...'
+                                : remaining === 0
+                                  ? 'Completo'
+                                  : 'Agregar'}
+                            </button>
+                          </div>
+                        )}
                       </div>
 
-                      {remaining > 0 && (
+                      {isFirst && remaining > 0 && (
                         <p className="mt-2 text-xs text-gray-400">
                           {remaining === 1
                             ? 'Falta 1 asiento para completar'

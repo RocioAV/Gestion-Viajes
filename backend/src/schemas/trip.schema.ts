@@ -25,6 +25,10 @@ export const addPassengerSchema = v.object({
   count: v.pipe(v.number(), v.minValue(1, 'Debe agregar al menos 1 pasajero')),
 })
 
+export const removePassengerSchema = v.object({
+  count: v.pipe(v.number(), v.minValue(1, 'Debe quitar al menos 1 pasajero')),
+})
+
 export const tripFiltersSchema = v.object({
   status: v.optional(tripStatusEnum),
   origin: v.optional(locationEnum),
@@ -42,5 +46,6 @@ export const queueFiltersSchema = v.object({
 export type CreateTripInput = v.InferOutput<typeof createTripSchema>
 export type JoinQueueInput = v.InferOutput<typeof joinQueueSchema>
 export type AddPassengerInput = v.InferOutput<typeof addPassengerSchema>
+export type RemovePassengerInput = v.InferOutput<typeof removePassengerSchema>
 export type TripFilters = v.InferOutput<typeof tripFiltersSchema>
 export type QueueFilters = v.InferOutput<typeof queueFiltersSchema>

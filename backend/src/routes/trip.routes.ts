@@ -1,8 +1,8 @@
 import { Router } from 'express'
-import { handleAddPassenger, handleCancelTrip, handleCompleteTrip, handleCreateTrip, handleGetQueue, handleGetTrips, handleJoinQueue } from '../controllers/trip.controller'
+import { handleAddPassenger, handleCancelTrip, handleCompleteTrip, handleCreateTrip, handleGetQueue, handleGetTrips, handleJoinQueue, handleRemovePassenger } from '../controllers/trip.controller'
 import { authMiddleware } from '../middlewares/auth.middleware'
 import { validate } from '../middlewares/validate.middleware'
-import { addPassengerSchema, createTripSchema, joinQueueSchema } from '../schemas/trip.schema'
+import { addPassengerSchema, createTripSchema, joinQueueSchema, removePassengerSchema } from '../schemas/trip.schema'
 
 export const tripRouter: ReturnType<typeof Router> = Router()
 
@@ -15,3 +15,4 @@ tripRouter.get('/', handleGetTrips)
 tripRouter.patch('/:id/complete', handleCompleteTrip)
 tripRouter.patch('/:id/cancel', handleCancelTrip)
 tripRouter.patch('/:id/passengers', validate(addPassengerSchema), handleAddPassenger)
+tripRouter.patch('/:id/passengers/remove', validate(removePassengerSchema), handleRemovePassenger)
