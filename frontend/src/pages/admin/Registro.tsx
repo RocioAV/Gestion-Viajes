@@ -84,7 +84,7 @@ function Registro() {
   }
 
   return (
-    <FormLayout backTo="/login">
+    <FormLayout backTo="/admin/viajes">
       <h1 className="text-2xl font-bold text-gray-900 mb-1">Registro de Operadores</h1>
       <p className="text-sm text-gray-500 mb-6">
         Completá los datos para crear un nuevo operador
@@ -207,14 +207,6 @@ function Registro() {
           {loading ? 'Registrando...' : 'Registrar operador'}
         </button>
       </form>
-
-      <p className="mt-6 text-center text-sm text-gray-500">
-        ¿Ya tenés cuenta?
-        {' '}
-        <Link to="/login" className="text-primary font-medium hover:underline">
-          Inicia sesión
-        </Link>
-      </p>
     </FormLayout>
   )
 }
