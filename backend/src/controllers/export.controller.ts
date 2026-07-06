@@ -23,9 +23,8 @@ export async function handleExportTrips(req: Request, res: Response, next: NextF
 
     const buffer = await exportTripReport(result.output)
 
-    const fromStr = result.output.from ?? 'inicio'
-    const toStr = result.output.to ?? 'fin'
-    const filename = `reporte_viajes_${fromStr}_al_${toStr}.xlsx`
+    const date = new Date().toISOString().split('T')[0]
+    const filename = `Reporte de Viaje_${date}.xlsx`
 
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
     res.setHeader('Content-Disposition', `attachment; filename="${filename}"`)

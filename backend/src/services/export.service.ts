@@ -32,6 +32,39 @@ function applyDataCellStyle(cell: Cell) {
   cell.alignment = { vertical: 'middle' }
 }
 
+const STATUS_LABELS: Record<string, string> = {
+  PENDING: 'Pendientes',
+  IN_PROGRESS: 'En progreso',
+  COMPLETED: 'Completados',
+  CANCELLED: 'Cancelados',
+}
+
+function buildFilterDescription(filters: ExportTripsFilters): string {
+  const parts: string[] = []
+
+  if (filters.status) {
+    parts.push(STATUS_LABELS[filters.status] ?? filters.status)
+  }
+
+  if (filters.origin) {
+    parts.push(`Origen: ${filters.origin}`)
+  }
+
+  if (filters.destination) {
+    parts.push(`Destino: ${filters.destination}`)
+  }
+
+  if (filters.from) {
+    parts.push(`Desde: ${filters.from}`)
+  }
+
+  if (filters.to) {
+    parts.push(`Hasta: ${filters.to}`)
+  }
+
+  return `Filtros: ${parts.join(' | ')}`
+}
+
 export async function exportTripReport(filters: ExportTripsFilters): Promise<Buffer> {
   const where: Record<string, unknown> = {}
 
@@ -78,7 +111,28 @@ export async function exportTripReport(filters: ExportTripsFilters): Promise<Buf
     { header: 'Precio Pasaje', key: 'price_per_passenger', width: 18 },
   ]
 
-  applyHeaderStyle(sheet.getRow(1))
+  const filterDescription = buildFilterDescription(filters)
+
+  sheet.spliceRows(1, 0, [])
+  const filterRow = sheet.getRow(1)
+  filterRow.getCell(1).value = filterDescription
+  filterRow.getCell(1).font = { italic: true, size: 11 }
+  filterRow.getCell(1).fill = {
+    type: 'pattern',
+    pattern: 'solid',
+    fgColor: { argb: 'FFF2F2F2' },
+  }
+  filterRow.getCell(1).alignment = { vertical: 'middle' }
+  filterRow.getCell(1).border = {
+    bottom: { style: 'thin', color: { argb: 'FFCCCCCC' } },
+  }
+  sheet.mergeCells(1, 1, 1, 5)
+
+  sheet.spliceRows(2, 0, [])
+
+  applyHeaderStyle(sheet.getRow(3))
+
+  const dataStartRow = 4
 
   for (const trip of trips) {
     const row = sheet.addRow({
@@ -103,13 +157,13 @@ export async function exportTripReport(filters: ExportTripsFilters): Promise<Buf
   }
 
   if (trips.length > 0) {
-    const lastDataRow = trips.length + 1
+    const lastDataRow = dataStartRow + trips.length - 1
     const totalRow = sheet.addRow({
       id: '',
       origin: '',
       destination: '',
       departure_at: 'TOTAL',
-      price_per_passenger: { formula: `SUM(E2:E${lastDataRow})` },
+      price_per_passenger: { formula: `SUM(E${dataStartRow}:E${lastDataRow})` },
     })
 
     totalRow.font = { bold: true }
