@@ -1,8 +1,9 @@
 import type { FormEvent } from 'react'
 import type { LoginFormData } from '../validations/auth'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
+import { getToken, getUser } from '../lib/auth'
 import { safeParse } from 'valibot'
 import FormLayout from '../components/FormLayout'
 import { loginUser } from '../services/auth.service'
@@ -29,6 +30,15 @@ const INITIAL_FORM: LoginFormData = { email: '', password: '' }
 
 function Login() {
   const navigate = useNavigate()
+
+  useEffect(() => {
+    const token = getToken()
+    const user = getUser()
+    if (token && user) {
+      navigate(user.role === 'ADMIN' ? '/admin/viajes' : '/operador/choferes', { replace: true })
+    }
+  }, [navigate])
+
   const [form, setForm] = useState<LoginFormData>(INITIAL_FORM)
   const [touched, setTouched] = useState<TouchedFields>({})
   const [loading, setLoading] = useState(false)
@@ -136,11 +146,7 @@ function Login() {
         </button>
       </form>
 
-      <p className="mt-6 text-center text-sm text-gray-500">
-        <Link to="/recuperar-password" className="text-primary font-medium hover:underline">
-          ¿Olvidaste tu contraseña?
-        </Link>
-      </p>
+
     </FormLayout>
   )
 }
