@@ -4,7 +4,7 @@ import type { ResetPasswordFormData } from '../../validations/password'
 import { useEffect, useState } from 'react'
 import { toast } from 'react-toastify'
 import { safeParse } from 'valibot'
-import { getUsers, resetUserPassword } from '../../services/admin.service'
+import { deleteUser, getUsers, resetUserPassword, restoreUser } from '../../services/admin.service'
 import { ResetPasswordSchema } from '../../validations/password'
 
 const ROLE_LABELS: Record<string, string> = {
@@ -36,12 +36,16 @@ function UsersPage() {
   const [resetTarget, setResetTarget] = useState<AdminUser | null>(null)
   const [resetForm, setResetForm] = useState<ResetPasswordFormData>(INITIAL_RESET_FORM)
   const [resetting, setResetting] = useState(false)
+  const [deleteTarget, setDeleteTarget] = useState<AdminUser | null>(null)
+  const [deleting, setDeleting] = useState(false)
+  const [restoringId, setRestoringId] = useState<number | null>(null)
+  const [showDeleted, setShowDeleted] = useState(false)
 
   useEffect(() => {
     async function loadUsers() {
       setLoading(true)
       try {
-        const data = await getUsers()
+        const data = await getUsers(showDeleted)
         setUsers(data.users)
       }
       catch {
@@ -53,7 +57,16 @@ function UsersPage() {
     }
 
     loadUsers()
-  }, [])
+
+    function handleVisibilityChange() {
+      if (document.visibilityState === 'visible') {
+        getUsers(showDeleted).then(data => setUsers(data.users)).catch(() => {})
+      }
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange)
+  }, [showDeleted])
 
   function openResetModal(user: AdminUser) {
     setResetTarget(user)
@@ -63,6 +76,50 @@ function UsersPage() {
   function closeResetModal() {
     setResetTarget(null)
     setResetForm(INITIAL_RESET_FORM)
+  }
+
+  function openDeleteModal(user: AdminUser) {
+    setDeleteTarget(user)
+  }
+
+  function closeDeleteModal() {
+    setDeleteTarget(null)
+  }
+
+  async function handleDelete() {
+    if (!deleteTarget)
+      return
+
+    setDeleting(true)
+    try {
+      await deleteUser(deleteTarget.id)
+      setUsers(prev => prev.filter(u => u.id !== deleteTarget.id))
+      toast.success(`Usuario ${deleteTarget.name} desactivado`)
+      closeDeleteModal()
+    }
+    catch (err) {
+      const message = err instanceof Error ? err.message : 'Error inesperado'
+      toast.error(message)
+    }
+    finally {
+      setDeleting(false)
+    }
+  }
+
+  async function handleRestore(user: AdminUser) {
+    setRestoringId(user.id)
+    try {
+      await restoreUser(user.id)
+      setUsers(prev => prev.filter(u => u.id !== user.id))
+      toast.success(`Usuario ${user.name} restaurado`)
+    }
+    catch (err) {
+      const message = err instanceof Error ? err.message : 'Error inesperado'
+      toast.error(message)
+    }
+    finally {
+      setRestoringId(null)
+    }
   }
 
   function handleResetChange(field: keyof ResetPasswordFormData, value: string) {
@@ -101,10 +158,23 @@ function UsersPage() {
   return (
     <div>
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Usuarios</h1>
-        <p className="mt-1 text-sm text-gray-500">
-          Gestión de usuarios del sistema
-        </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Usuarios</h1>
+            <p className="mt-1 text-sm text-gray-500">
+              Gestión de usuarios del sistema
+            </p>
+          </div>
+          <label className="flex items-center gap-2 cursor-pointer">
+            <span className="text-sm text-gray-600">Mostrar desactivados</span>
+            <input
+              type="checkbox"
+              checked={showDeleted}
+              onChange={e => setShowDeleted(e.target.checked)}
+              className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer"
+            />
+          </label>
+        </div>
       </div>
 
       {loading
@@ -121,44 +191,80 @@ function UsersPage() {
             )
           : (
               <div className="space-y-3">
-                {users.map(user => (
-                  <div
-                    key={user.id}
-                    className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm"
-                  >
-                    <div className="flex items-start justify-between">
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-3">
-                          <h3 className="text-sm font-semibold text-gray-900">{user.name}</h3>
-                          <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${ROLE_STYLES[user.role] ?? 'bg-gray-100 text-gray-600'}`}>
-                            {ROLE_LABELS[user.role] ?? user.role}
-                          </span>
+                {users.map(user => {
+                  const isDeleted = !!user.deleted_at
+                  return (
+                    <div
+                      key={user.id}
+                      className={`rounded-xl border bg-white p-5 shadow-sm ${
+                        isDeleted ? 'border-gray-200 opacity-60' : 'border-gray-200'
+                      }`}
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-3">
+                            <h3 className={`text-sm font-semibold ${isDeleted ? 'text-gray-400' : 'text-gray-900'}`}>{user.name}</h3>
+                            <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${ROLE_STYLES[user.role] ?? 'bg-gray-100 text-gray-600'}`}>
+                              {ROLE_LABELS[user.role] ?? user.role}
+                            </span>
+                            {isDeleted && (
+                              <span className="inline-flex items-center rounded-full bg-gray-200 px-2.5 py-0.5 text-xs font-medium text-gray-500">
+                                Desactivado
+                              </span>
+                            )}
+                          </div>
+                          <p className={`text-sm ${isDeleted ? 'text-gray-400' : 'text-gray-600'}`}>{user.email}</p>
+                          <div className="flex items-center gap-4 text-sm text-gray-500">
+                            {user.assigned_location && (
+                              <span>{user.assigned_location}</span>
+                            )}
+                            <span>
+                              Creado:
+                              {' '}
+                              {formatDate(user.created_at)}
+                            </span>
+                          </div>
                         </div>
-                        <p className="text-sm text-gray-600">{user.email}</p>
-                        <div className="flex items-center gap-4 text-sm text-gray-500">
-                          {user.assigned_location && (
-                            <span>{user.assigned_location}</span>
-                          )}
-                          <span>
-                            Creado:
-                            {' '}
-                            {formatDate(user.created_at)}
-                          </span>
-                        </div>
+                        {user.role !== 'ADMIN' && (
+                          <div className="flex gap-2">
+                            {isDeleted
+                              ? (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleRestore(user)}
+                                    disabled={restoringId === user.id}
+                                    className="rounded-lg px-3 py-1.5 text-sm font-medium text-success
+                                               hover:bg-success/10 disabled:opacity-50 transition-colors cursor-pointer"
+                                  >
+                                    {restoringId === user.id ? 'Restaurando...' : 'Reactivar'}
+                                  </button>
+                                )
+                              : (
+                                  <>
+                                    <button
+                                      type="button"
+                                      onClick={() => openResetModal(user)}
+                                      className="rounded-lg px-3 py-1.5 text-sm font-medium text-primary
+                                                 hover:bg-primary/10 transition-colors cursor-pointer"
+                                    >
+                                      Restablecer
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => openDeleteModal(user)}
+                                      className="rounded-lg px-3 py-1.5 text-sm font-medium text-error
+                                                 hover:bg-error/10 transition-colors cursor-pointer"
+                                    >
+                                      Desactivar
+                                    </button>
+                                  </>
+                                )}
+                          </div>
+                        )}
                       </div>
-                      {user.role !== 'ADMIN' && (
-                        <button
-                          type="button"
-                          onClick={() => openResetModal(user)}
-                          className="rounded-lg px-3 py-1.5 text-sm font-medium text-primary
-                                     hover:bg-primary/10 transition-colors cursor-pointer"
-                        >
-                          Restablecer
-                        </button>
-                      )}
                     </div>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
             )}
 
@@ -226,6 +332,41 @@ function UsersPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+      {deleteTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="w-full max-w-sm rounded-xl bg-white p-6 shadow-xl">
+            <h2 className="text-lg font-bold text-gray-900 mb-2">Desactivar usuario</h2>
+            <p className="text-sm text-gray-500 mb-6">
+              ¿Estás seguro de desactivar a
+              {' '}
+              <span className="font-medium text-gray-700">{deleteTarget.name}</span>
+              ?
+              <br />
+              El usuario no podrá iniciar sesión ni aparecerá en los listados.
+            </p>
+
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={closeDeleteModal}
+                className="flex-1 rounded-lg border border-gray-300 py-2.5 text-sm font-medium text-gray-700
+                           hover:bg-gray-50 transition-colors cursor-pointer"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={handleDelete}
+                disabled={deleting}
+                className="flex-1 bg-error text-white rounded-lg py-2.5 font-medium
+                           hover:bg-error/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
+              >
+                {deleting ? 'Desactivando...' : 'Desactivar'}
+              </button>
+            </div>
           </div>
         </div>
       )}

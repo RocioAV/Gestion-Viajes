@@ -28,7 +28,7 @@ async function updateVehicleStatus(id: number, status: VehicleStatus) {
 
 export async function createVehicle(input: CreateVehicleInput, currentLocation: string) {
   const driver = await prisma.driver.findUnique({
-    where: { id: input.driver_id },
+    where: { id: input.driver_id, deleted_at: null },
   })
 
   if (!driver) {
@@ -110,7 +110,7 @@ export async function updateVehicle(id: number, input: UpdateVehicleInput) {
 
   if (input.driver_id) {
     const driver = await prisma.driver.findUnique({
-      where: { id: input.driver_id },
+      where: { id: input.driver_id, deleted_at: null },
     })
 
     if (!driver) {

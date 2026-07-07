@@ -20,8 +20,8 @@ export interface RegisterInput {
 }
 
 export async function loginUser(input: LoginInput) {
-  const user = await prisma.user.findUnique({
-    where: { email: input.email },
+  const user = await prisma.user.findFirst({
+    where: { email: input.email, deleted_at: null },
   })
 
   if (!user) {
@@ -64,7 +64,7 @@ export interface ChangePasswordInput {
 
 export async function changePassword(input: ChangePasswordInput) {
   const user = await prisma.user.findUnique({
-    where: { id: input.userId },
+    where: { id: input.userId, deleted_at: null },
   })
 
   if (!user) {
@@ -86,8 +86,8 @@ export async function changePassword(input: ChangePasswordInput) {
 }
 
 export async function registerUser(input: RegisterInput) {
-  const existing = await prisma.user.findUnique({
-    where: { email: input.email },
+  const existing = await prisma.user.findFirst({
+    where: { email: input.email, deleted_at: null },
   })
 
   if (existing) {

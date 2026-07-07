@@ -1,5 +1,5 @@
 import type { NextFunction, Request, Response } from 'express'
-import { createDriver, deleteDriver, getDriverById, getDrivers, toggleAvailability, updateDriver } from '../services/driver.service'
+import { createDriver, deleteDriver, getDriverById, getDrivers, restoreDriver, toggleAvailability, updateDriver } from '../services/driver.service'
 
 export async function handleCreateDriver(req: Request, res: Response, next: NextFunction) {
   try {
@@ -11,9 +11,10 @@ export async function handleCreateDriver(req: Request, res: Response, next: Next
   }
 }
 
-export async function handleGetDrivers(_req: Request, res: Response, next: NextFunction) {
+export async function handleGetDrivers(req: Request, res: Response, next: NextFunction) {
   try {
-    const drivers = await getDrivers()
+    const includeDeleted = req.query.include_deleted === 'true'
+    const drivers = await getDrivers(includeDeleted)
     res.json({ drivers })
   }
   catch (error) {
@@ -48,6 +49,17 @@ export async function handleDeleteDriver(req: Request, res: Response, next: Next
     const id = Number(req.params.id)
     await deleteDriver(id)
     res.json({ message: 'Chofer eliminado exitosamente' })
+  }
+  catch (error) {
+    next(error)
+  }
+}
+
+export async function handleRestoreDriver(req: Request, res: Response, next: NextFunction) {
+  try {
+    const id = Number(req.params.id)
+    await restoreDriver(id)
+    res.json({ message: 'Chofer restaurado correctamente' })
   }
   catch (error) {
     next(error)

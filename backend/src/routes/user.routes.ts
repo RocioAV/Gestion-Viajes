@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { handleDeleteUser, handleGetUsers, handleResetPassword } from '../controllers/user.controller'
+import { handleDeleteUser, handleGetUsers, handleResetPassword, handleRestoreUser } from '../controllers/user.controller'
 import { authMiddleware, requireRole } from '../middlewares/auth.middleware'
 import { validate } from '../middlewares/validate.middleware'
 import { resetPasswordSchema } from '../schemas/auth.schema'
@@ -10,6 +10,7 @@ userRouter.use(authMiddleware)
 
 userRouter.get('/', handleGetUsers)
 userRouter.delete('/:id', handleDeleteUser)
+userRouter.patch('/:id/restore', requireRole('ADMIN'), handleRestoreUser)
 userRouter.put(
   '/:id/reset-password',
   requireRole('ADMIN'),

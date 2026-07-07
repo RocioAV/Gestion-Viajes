@@ -13,15 +13,16 @@ export async function createDriver(input: CreateDriverInput) {
   return prisma.driver.create({ data: input })
 }
 
-export async function getDrivers() {
+export async function getDrivers(includeDeleted = false) {
   return prisma.driver.findMany({
+    where: includeDeleted ? {} : { deleted_at: null },
     include: { vehicle: true },
   })
 }
 
 export async function getDriverById(id: number) {
   const driver = await prisma.driver.findUnique({
-    where: { id },
+    where: { id, deleted_at: null },
     include: { vehicle: true },
   })
 
@@ -33,7 +34,7 @@ export async function getDriverById(id: number) {
 }
 
 export async function updateDriver(id: number, input: UpdateDriverInput) {
-  const driver = await prisma.driver.findUnique({ where: { id } })
+  const driver = await prisma.driver.findUnique({ where: { id, deleted_at: null } })
 
   if (!driver) {
     throw Object.assign(new Error('Chofer no encontrado'), { status: 404 })
@@ -44,6 +45,7 @@ export async function updateDriver(id: number, input: UpdateDriverInput) {
       where: {
         national_id: input.national_id,
         id: { not: id },
+        deleted_at: null,
       },
     })
 
@@ -62,9 +64,29 @@ export async function updateDriver(id: number, input: UpdateDriverInput) {
   })
 }
 
-export async function deleteDriver(id: number) {
+export async function restoreDriver(id: number) {
   const driver = await prisma.driver.findUnique({
     where: { id },
+    select: { id: true, deleted_at: true },
+  })
+
+  if (!driver) {
+    throw Object.assign(new Error('Chofer no encontrado'), { status: 404 })
+  }
+
+  if (!driver.deleted_at) {
+    throw Object.assign(new Error('El chofer ya está activo'), { status: 400 })
+  }
+
+  return prisma.driver.update({
+    where: { id },
+    data: { deleted_at: null },
+  })
+}
+
+export async function deleteDriver(id: number) {
+  const driver = await prisma.driver.findUnique({
+    where: { id, deleted_at: null },
     include: { vehicle: true },
   })
 
@@ -72,19 +94,24 @@ export async function deleteDriver(id: number) {
     throw Object.assign(new Error('Chofer no encontrado'), { status: 404 })
   }
 
-  if (driver.vehicle) {
-    throw Object.assign(
-      new Error('No se puede eliminar un chofer con un vehículo asociado'),
-      { status: 409 },
-    )
-  }
+  await prisma.$transaction(async (tx) => {
+    if (driver.vehicle) {
+      await tx.vehicle.update({
+        where: { id: driver.vehicle.id },
+        data: { status: 'OUT_OF_SERVICE' },
+      })
+    }
 
-  return prisma.driver.delete({ where: { id } })
+    await tx.driver.update({
+      where: { id },
+      data: { deleted_at: new Date() },
+    })
+  })
 }
 
 export async function toggleAvailability(id: number) {
   const driver = await prisma.driver.findUnique({
-    where: { id },
+    where: { id, deleted_at: null },
     include: { vehicle: true },
   })
 
@@ -104,7 +131,7 @@ export async function toggleAvailability(id: number) {
   })
 
   return prisma.driver.findUnique({
-    where: { id },
+    where: { id, deleted_at: null },
     include: { vehicle: true },
   })
 }

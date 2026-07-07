@@ -57,8 +57,9 @@ export async function exportTrips(
   URL.revokeObjectURL(url)
 }
 
-export async function getUsers(): Promise<{ users: AdminUser[] }> {
-  return apiClient('/users')
+export async function getUsers(includeDeleted = false): Promise<{ users: AdminUser[] }> {
+  const params = includeDeleted ? '?include_deleted=true' : ''
+  return apiClient(`/users${params}`)
 }
 
 export async function deleteUser(
@@ -67,8 +68,9 @@ export async function deleteUser(
   return apiClient(`/users/${userId}`, { method: 'DELETE' })
 }
 
-export async function getDrivers(): Promise<{ drivers: AdminDriver[] }> {
-  return apiClient('/drivers')
+export async function getDrivers(includeDeleted = false): Promise<{ drivers: AdminDriver[] }> {
+  const params = includeDeleted ? '?include_deleted=true' : ''
+  return apiClient(`/drivers${params}`)
 }
 
 export async function deleteDriver(
@@ -85,4 +87,12 @@ export async function resetUserPassword(
     method: 'PUT',
     body: JSON.stringify(data),
   })
+}
+
+export async function restoreUser(userId: number): Promise<{ message: string }> {
+  return apiClient(`/users/${userId}/restore`, { method: 'PATCH' })
+}
+
+export async function restoreDriver(driverId: number): Promise<{ message: string }> {
+  return apiClient(`/drivers/${driverId}/restore`, { method: 'PATCH' })
 }
