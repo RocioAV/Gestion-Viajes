@@ -64,6 +64,9 @@ function Login() {
       if (response.result.user.role === 'OPERATOR') {
         navigate('/operador/choferes')
       }
+      else {
+        navigate('/admin/viajes')
+      }
     }
     catch (err) {
       const message = err instanceof Error ? err.message : 'Error inesperado'
