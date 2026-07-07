@@ -1,8 +1,8 @@
 import { Router } from 'express'
-import { handleLogin, handleRegister } from '../controllers/auth.controller'
+import { handleChangePassword, handleLogin, handleRegister } from '../controllers/auth.controller'
 import { authMiddleware, requireRole } from '../middlewares/auth.middleware'
 import { validate } from '../middlewares/validate.middleware'
-import { loginSchema, registerSchema } from '../schemas/auth.schema'
+import { changePasswordSchema, loginSchema, registerSchema } from '../schemas/auth.schema'
 
 export const authRouter: ReturnType<typeof Router> = Router()
 
@@ -13,4 +13,10 @@ authRouter.post(
   requireRole('ADMIN'),
   validate(registerSchema),
   handleRegister,
+)
+authRouter.put(
+  '/change-password',
+  authMiddleware,
+  validate(changePasswordSchema),
+  handleChangePassword,
 )

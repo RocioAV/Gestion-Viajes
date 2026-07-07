@@ -6,6 +6,7 @@ import AdminDriversPage from './pages/admin/AdminDriversPage'
 import Registro from './pages/admin/Registro'
 import AdminTripsPage from './pages/admin/TripsPage'
 import UsersPage from './pages/admin/UsersPage'
+import ChangePasswordPage from './pages/ChangePasswordPage'
 import CrearDriverVehicle from './pages/drivers/CrearDriverVehicle'
 import Home from './pages/Home'
 import Login from './pages/Login'
@@ -47,6 +48,7 @@ function App() {
             <Route path="choferes" element={<AdminDriversPage />} />
             <Route path="choferes/crear" element={<CrearDriverVehicle />} />
             <Route path="operadores/crear" element={<Registro />} />
+            <Route path="cambiar-contrasena" element={<ChangePasswordPage />} />
           </Route>
 
           <Route path="/operador" element={<OperatorRoutes />}>
@@ -55,6 +57,7 @@ function App() {
             <Route path="ingresar-cola" element={<JoinQueuePage />} />
             <Route path="cola" element={<QueuePage />} />
             <Route path="viajes" element={<TripsPage />} />
+            <Route path="cambiar-contrasena" element={<ChangePasswordPage />} />
           </Route>
         </Routes>
       </div>

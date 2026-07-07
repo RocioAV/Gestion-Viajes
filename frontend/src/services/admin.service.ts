@@ -76,3 +76,13 @@ export async function deleteDriver(
 ): Promise<{ message: string }> {
   return apiClient(`/drivers/${driverId}`, { method: 'DELETE' })
 }
+
+export async function resetUserPassword(
+  userId: number,
+  data: { newPassword: string; confirmPassword: string },
+): Promise<{ message: string }> {
+  return apiClient(`/users/${userId}/reset-password`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  })
+}

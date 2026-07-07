@@ -49,3 +49,10 @@ export async function registerUser(data: RegisterBody): Promise<RegisterResponse
     body: JSON.stringify(data),
   })
 }
+
+export async function changePassword(data: { currentPassword: string; newPassword: string; confirmPassword: string }): Promise<{ message: string }> {
+  return apiClient('/auth/change-password', {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  })
+}
