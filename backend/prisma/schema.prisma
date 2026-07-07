@@ -13,17 +13,18 @@ datasource db {
 }
 
 model User {
-  id                Int      @id @default(autoincrement())
+  id                Int       @id @default(autoincrement())
   name              String
-  email             String   @unique
+  email             String    @unique
   password          String
-  role              String   // Valores esperados: "ADMIN", "OPERATOR"
-  assigned_location String?  // Valores esperados: "JUJUY", "SALTA". (Nulo para el ADMIN)
-  created_at        DateTime @default(now())
+  role              String    // Valores esperados: "ADMIN", "OPERATOR"
+  assigned_location String?   // Valores esperados: "JUJUY", "SALTA". (Nulo para el ADMIN)
+  created_at        DateTime  @default(now())
+  deleted_at        DateTime? // Nulo = activo, con fecha = desactivado (soft delete)
 
   // Relaciones inversas necesarias para Prisma
-  trips_departed    Trip[]   @relation("DepartureOperator")
-  trips_arrived     Trip[]   @relation("ArrivalOperator")
+  trips_departed    Trip[]    @relation("DepartureOperator")
+  trips_arrived     Trip[]    @relation("ArrivalOperator")
 
   @@map("users") // Mapea a la tabla "users" en la base de datos
 }
@@ -34,6 +35,7 @@ model Driver {
   last_name   String
   phone       String
   national_id String    @unique
+  deleted_at  DateTime? // Nulo = activo, con fecha = desactivado (soft delete)
 
   vehicle    Vehicle?
 

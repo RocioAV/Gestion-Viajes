@@ -10,6 +10,15 @@ function DriversPage() {
 
   useEffect(() => {
     loadDrivers()
+
+    function handleVisibilityChange() {
+      if (document.visibilityState === 'visible') {
+        loadDrivers()
+      }
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange)
   }, [])
 
   async function loadDrivers() {
@@ -39,8 +48,15 @@ function DriversPage() {
       )
       toast.success(data.message)
     }
-    catch {
-      toast.error('Error al cambiar disponibilidad')
+    catch (err) {
+      const message = err instanceof Error ? err.message : 'Error al cambiar disponibilidad'
+      if (message === 'Chofer no encontrado') {
+        setDrivers(prev => prev.filter(d => d.id !== driver.id))
+        toast.info('El chofer fue desactivado del sistema')
+      }
+      else {
+        toast.error(message)
+      }
     }
     finally {
       setTogglingId(null)

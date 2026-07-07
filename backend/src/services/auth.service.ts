@@ -20,8 +20,8 @@ export interface RegisterInput {
 }
 
 export async function loginUser(input: LoginInput) {
-  const user = await prisma.user.findUnique({
-    where: { email: input.email },
+  const user = await prisma.user.findFirst({
+    where: { email: input.email, deleted_at: null },
   })
 
   if (!user) {
@@ -56,9 +56,38 @@ export async function loginUser(input: LoginInput) {
   }
 }
 
+export interface ChangePasswordInput {
+  userId: number
+  currentPassword: string
+  newPassword: string
+}
+
+export async function changePassword(input: ChangePasswordInput) {
+  const user = await prisma.user.findUnique({
+    where: { id: input.userId, deleted_at: null },
+  })
+
+  if (!user) {
+    throw Object.assign(new Error('Usuario no encontrado'), { status: 404 })
+  }
+
+  const isValid = await bcrypt.compare(input.currentPassword, user.password)
+
+  if (!isValid) {
+    throw Object.assign(new Error('La contraseña actual no es correcta'), { status: 400 })
+  }
+
+  const hashedPassword = await bcrypt.hash(input.newPassword, 10)
+
+  await prisma.user.update({
+    where: { id: input.userId },
+    data: { password: hashedPassword },
+  })
+}
+
 export async function registerUser(input: RegisterInput) {
-  const existing = await prisma.user.findUnique({
-    where: { email: input.email },
+  const existing = await prisma.user.findFirst({
+    where: { email: input.email, deleted_at: null },
   })
 
   if (existing) {

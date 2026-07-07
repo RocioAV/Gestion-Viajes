@@ -11,6 +11,7 @@ export interface AdminUser {
   role: string
   assigned_location: string | null
   created_at: string
+  deleted_at: string | null
 }
 
 export interface AdminDriver {
@@ -19,6 +20,7 @@ export interface AdminDriver {
   last_name: string
   phone: string
   national_id: string
+  deleted_at: string | null
   vehicle: {
     id: number
     license_plate: string
