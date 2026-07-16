@@ -13,17 +13,18 @@ datasource db {
 }
 
 model User {
-  id                Int      @id @default(autoincrement())
+  id                Int       @id @default(autoincrement())
   name              String
-  email             String   @unique
+  email             String    @unique
   password          String
-  role              String   // Valores esperados: "ADMIN", "OPERATOR"
-  assigned_location String?  // Valores esperados: "JUJUY", "SALTA". (Nulo para el ADMIN)
-  created_at        DateTime @default(now())
+  role              String    // Valores esperados: "ADMIN", "OPERATOR"
+  assigned_location String?   // Valores esperados: "JUJUY", "SALTA". (Nulo para el ADMIN)
+  created_at        DateTime  @default(now())
+  deleted_at        DateTime? // Nulo = activo, con fecha = desactivado (soft delete)
 
   // Relaciones inversas necesarias para Prisma
-  trips_departed    Trip[]   @relation("DepartureOperator")
-  trips_arrived     Trip[]   @relation("ArrivalOperator")
+  trips_departed    Trip[]    @relation("DepartureOperator")
+  trips_arrived     Trip[]    @relation("ArrivalOperator")
 
   @@map("users") // Mapea a la tabla "users" en la base de datos
 }
@@ -34,9 +35,9 @@ model Driver {
   last_name   String
   phone       String
   national_id String    @unique
+  deleted_at  DateTime? // Nulo = activo, con fecha = desactivado (soft delete)
 
-  // Relación: Un chofer puede tener varios vehículos
-  vehicles    Vehicle[]
+  vehicle    Vehicle?
 
   @@map("drivers") // Mapea a la tabla "drivers" en la base de datos
 }
@@ -49,8 +50,8 @@ model Vehicle {
   status             String    // Valores esperados: "AVAILABLE", "ON_TRIP", "OUT_OF_SERVICE"
   current_location   String    // Valores esperados: "JUJUY", "SALTA"
   queue_entry_at     DateTime? // Cuándo entró a la fila. (Nulo si está en viaje)
-  
-  driver_id          Int
+
+  driver_id          Int       @unique
   driver             Driver    @relation(fields: [driver_id], references: [id])
 
   // Relación: Un vehículo tiene muchos viajes
@@ -81,4 +82,12 @@ model Trip {
   arrival_at            DateTime? // Se llena al registrar la llegada
 
   @@map("trips") // Mapea a la tabla "trips" en la base de datos
+}
+
+model AppSetting {
+  id    Int    @id @default(autoincrement())
+  key   String @unique
+  value String
+
+  @@map("app_settings")
 }
