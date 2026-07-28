@@ -81,7 +81,7 @@ export async function deleteDriver(
 
 export async function resetUserPassword(
   userId: number,
-  data: { newPassword: string; confirmPassword: string },
+  data: { newPassword: string, confirmPassword: string },
 ): Promise<{ message: string }> {
   return apiClient(`/users/${userId}/reset-password`, {
     method: 'PUT',

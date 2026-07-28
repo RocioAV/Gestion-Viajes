@@ -130,7 +130,7 @@ function AdminDriversPage() {
             )
           : (
               <div className="space-y-3">
-                {drivers.map(driver => {
+                {drivers.map((driver) => {
                   const isDeleted = !!driver.deleted_at
                   return (
                     <div
@@ -212,7 +212,11 @@ function AdminDriversPage() {
             <p className="text-sm text-gray-500 mb-6">
               ¿Estás seguro de desactivar a
               {' '}
-              <span className="font-medium text-gray-700">{deleteTarget.first_name} {deleteTarget.last_name}</span>
+              <span className="font-medium text-gray-700">
+                {deleteTarget.first_name}
+                {' '}
+                {deleteTarget.last_name}
+              </span>
               ?
               <br />
               {deleteTarget.vehicle

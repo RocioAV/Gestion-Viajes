@@ -58,7 +58,8 @@ function TripsPage() {
   }, [filters])
 
   async function handleComplete(tripId: number) {
-    if (!window.confirm('¿Estas seguro de completar este viaje?')) return
+    if (!window.confirm('¿Estas seguro de completar este viaje?'))
+      return
 
     setActingId(tripId)
     try {
@@ -79,7 +80,8 @@ function TripsPage() {
   }
 
   async function handleCancel(tripId: number) {
-    if (!window.confirm('¿Estas seguro de cancelar este viaje?')) return
+    if (!window.confirm('¿Estas seguro de cancelar este viaje?'))
+      return
 
     setActingId(tripId)
     try {
@@ -167,7 +169,7 @@ function TripsPage() {
             )
           : (
               <div className="space-y-3">
-                  {trips.map((trip) => {
+                {trips.map((trip) => {
                   const isActing = actingId === trip.id
                   const isActive = trip.status === 'IN_PROGRESS'
                   const isAtDestination = trip.destination === user?.assigned_location

@@ -191,7 +191,7 @@ function UsersPage() {
             )
           : (
               <div className="space-y-3">
-                {users.map(user => {
+                {users.map((user) => {
                   const isDeleted = !!user.deleted_at
                   return (
                     <div

@@ -50,7 +50,7 @@ export async function registerUser(data: RegisterBody): Promise<RegisterResponse
   })
 }
 
-export async function changePassword(data: { currentPassword: string; newPassword: string; confirmPassword: string }): Promise<{ message: string }> {
+export async function changePassword(data: { currentPassword: string, newPassword: string, confirmPassword: string }): Promise<{ message: string }> {
   return apiClient('/auth/change-password', {
     method: 'PUT',
     body: JSON.stringify(data),

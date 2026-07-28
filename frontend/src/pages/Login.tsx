@@ -1,11 +1,11 @@
 import type { FormEvent } from 'react'
 import type { LoginFormData } from '../validations/auth'
 import { useEffect, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
-import { getToken, getUser } from '../lib/auth'
 import { safeParse } from 'valibot'
 import FormLayout from '../components/FormLayout'
+import { getToken, getUser } from '../lib/auth'
 import { loginUser } from '../services/auth.service'
 import { LoginSchema } from '../validations/auth'
 
@@ -145,7 +145,6 @@ function Login() {
           {loading ? 'Ingresando...' : 'Iniciar sesión'}
         </button>
       </form>
-
 
     </FormLayout>
   )

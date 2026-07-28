@@ -1,5 +1,5 @@
 import type { InferOutput } from 'valibot'
-import { email, minLength, object, pipe, string } from 'valibot'
+import { minLength, object, pipe, string } from 'valibot'
 
 export const ChangePasswordSchema = object({
   currentPassword: pipe(string(), minLength(1, 'La contraseña actual es requerida')),

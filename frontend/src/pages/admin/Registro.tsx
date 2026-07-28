@@ -1,7 +1,6 @@
 import type { FormEvent } from 'react'
 import type { RegistroFormData } from '../../validations/auth'
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import { safeParse } from 'valibot'
 import FormLayout from '../../components/FormLayout'

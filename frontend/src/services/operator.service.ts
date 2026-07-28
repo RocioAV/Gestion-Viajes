@@ -42,7 +42,7 @@ export async function joinQueue(
 }
 
 export async function getQueue(
-  origin: string,
+  origin: TripFilters['origin'],
 ): Promise<{ trips: TripWithRelations[] }> {
   return getTrips({ status: 'PENDING', origin })
 }

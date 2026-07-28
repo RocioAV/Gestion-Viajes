@@ -7,7 +7,8 @@ import { addPassenger, getQueue, removePassenger } from '../../services/operator
 function formatTime(dateStr: string) {
   const diff = Date.now() - new Date(dateStr).getTime()
   const mins = Math.floor(diff / 60000)
-  if (mins < 60) return `${mins} min`
+  if (mins < 60)
+    return `${mins} min`
   const hours = Math.floor(mins / 60)
   return `${hours}h ${mins % 60}min`
 }
@@ -126,7 +127,8 @@ function QueuePage() {
                             </h3>
                             <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
                               isFirst ? 'bg-primary/10 text-primary' : 'bg-gray-100 text-gray-500'
-                            }`}>
+                            }`}
+                            >
                               {isFirst ? 'En cola (primero)' : 'En espera'}
                             </span>
                             <span className="text-xs text-gray-400">
