@@ -4,9 +4,9 @@ import type { Express } from 'express'
 import process from 'node:process'
 import cors from 'cors'
 import express from 'express'
-import { corsOptions } from './config/cors'
-import { errorMiddleware } from './middlewares/error.middleware'
-import { apiRouter } from './routes/index'
+import { corsOptions } from './config/cors.js'
+import { errorMiddleware } from './middlewares/error.middleware.js'
+import { apiRouter } from './routes/index.js'
 /* eslint-enable perfectionist/sort-imports */
 
 export const app: Express = express()
