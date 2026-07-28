@@ -1,4 +1,4 @@
-import { prisma } from '../lib/prisma'
+import { prisma } from '../lib/prisma.js'
 
 export async function getBasePrice() {
   const setting = await prisma.appSetting.findUnique({ where: { key: 'base_price' } })

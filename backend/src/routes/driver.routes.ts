@@ -1,8 +1,8 @@
 import { Router } from 'express'
-import { handleCreateDriver, handleDeleteDriver, handleGetDriverById, handleGetDrivers, handleRestoreDriver, handleToggleAvailability, handleUpdateDriver } from '../controllers/driver.controller'
-import { authMiddleware } from '../middlewares/auth.middleware'
-import { validate } from '../middlewares/validate.middleware'
-import { createDriverSchema, updateDriverSchema } from '../schemas/driver.schema'
+import { handleCreateDriver, handleDeleteDriver, handleGetDriverById, handleGetDrivers, handleRestoreDriver, handleToggleAvailability, handleUpdateDriver } from '../controllers/driver.controller.js'
+import { authMiddleware } from '../middlewares/auth.middleware.js'
+import { validate } from '../middlewares/validate.middleware.js'
+import { createDriverSchema, updateDriverSchema } from '../schemas/driver.schema.js'
 
 export const driverRouter: ReturnType<typeof Router> = Router()
 

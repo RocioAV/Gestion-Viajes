@@ -1,5 +1,5 @@
-import type { CreateVehicleInput, UpdateVehicleInput, VehicleFilters } from '../schemas/vehicle.schema'
-import { prisma } from '../lib/prisma'
+import type { CreateVehicleInput, UpdateVehicleInput, VehicleFilters } from '../schemas/vehicle.schema.js'
+import { prisma } from '../lib/prisma.js'
 
 type VehicleStatus = 'AVAILABLE' | 'OUT_OF_SERVICE'
 

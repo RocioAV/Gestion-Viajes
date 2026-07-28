@@ -1,5 +1,5 @@
 import bcrypt from 'bcryptjs'
-import { prisma } from '../lib/prisma'
+import { prisma } from '../lib/prisma.js'
 
 export async function getUsers(includeDeleted = false) {
   return prisma.user.findMany({

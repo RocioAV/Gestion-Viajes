@@ -1,5 +1,5 @@
 import type { NextFunction, Request, Response } from 'express'
-import { changePassword, loginUser, registerUser } from '../services/auth.service'
+import { changePassword, loginUser, registerUser } from '../services/auth.service.js'
 
 export async function handleLogin(req: Request, res: Response, next: NextFunction) {
   try {

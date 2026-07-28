@@ -1,8 +1,8 @@
 import { Router } from 'express'
-import { handleDeleteUser, handleGetUsers, handleResetPassword, handleRestoreUser } from '../controllers/user.controller'
-import { authMiddleware, requireRole } from '../middlewares/auth.middleware'
-import { validate } from '../middlewares/validate.middleware'
-import { resetPasswordSchema } from '../schemas/auth.schema'
+import { handleDeleteUser, handleGetUsers, handleResetPassword, handleRestoreUser } from '../controllers/user.controller.js'
+import { authMiddleware, requireRole } from '../middlewares/auth.middleware.js'
+import { validate } from '../middlewares/validate.middleware.js'
+import { resetPasswordSchema } from '../schemas/auth.schema.js'
 
 export const userRouter: ReturnType<typeof Router> = Router()
 

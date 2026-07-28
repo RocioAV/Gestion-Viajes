@@ -1,5 +1,5 @@
-import type { AddPassengerInput, CreateTripInput, JoinQueueInput, QueueFilters, RemovePassengerInput, TripFilters } from '../schemas/trip.schema'
-import { prisma } from '../lib/prisma'
+import type { AddPassengerInput, CreateTripInput, JoinQueueInput, QueueFilters, RemovePassengerInput, TripFilters } from '../schemas/trip.schema.js'
+import { prisma } from '../lib/prisma.js'
 
 function oppositeLocation(location: string): string {
   return location === 'JUJUY' ? 'SALTA' : 'JUJUY'

@@ -1,5 +1,5 @@
 import type { NextFunction, Request, Response } from 'express'
-import { deleteUser, getUsers, resetUserPassword, restoreUser } from '../services/user.service'
+import { deleteUser, getUsers, resetUserPassword, restoreUser } from '../services/user.service.js'
 
 export async function handleGetUsers(req: Request, res: Response, next: NextFunction) {
   try {

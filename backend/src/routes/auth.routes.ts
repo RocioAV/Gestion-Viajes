@@ -1,8 +1,8 @@
 import { Router } from 'express'
-import { handleChangePassword, handleLogin, handleRegister } from '../controllers/auth.controller'
-import { authMiddleware, requireRole } from '../middlewares/auth.middleware'
-import { validate } from '../middlewares/validate.middleware'
-import { changePasswordSchema, loginSchema, registerSchema } from '../schemas/auth.schema'
+import { handleChangePassword, handleLogin, handleRegister } from '../controllers/auth.controller.js'
+import { authMiddleware, requireRole } from '../middlewares/auth.middleware.js'
+import { validate } from '../middlewares/validate.middleware.js'
+import { changePasswordSchema, loginSchema, registerSchema } from '../schemas/auth.schema.js'
 
 export const authRouter: ReturnType<typeof Router> = Router()
 

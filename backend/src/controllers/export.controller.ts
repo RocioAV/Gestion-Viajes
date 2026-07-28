@@ -1,7 +1,7 @@
 import type { NextFunction, Request, Response } from 'express'
 import * as v from 'valibot'
-import { exportTripsSchema } from '../schemas/export.schema'
-import { exportTripReport } from '../services/export.service'
+import { exportTripsSchema } from '../schemas/export.schema.js'
+import { exportTripReport } from '../services/export.service.js'
 
 export async function handleExportTrips(req: Request, res: Response, next: NextFunction) {
   try {

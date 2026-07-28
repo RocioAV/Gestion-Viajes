@@ -1,5 +1,5 @@
 import type { NextFunction, Request, Response } from 'express'
-import { getNextTrips } from '../services/public.service'
+import { getNextTrips } from '../services/public.service.js'
 
 export async function handleGetNextTrips(_req: Request, res: Response, next: NextFunction) {
   try {

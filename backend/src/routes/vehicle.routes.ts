@@ -1,8 +1,8 @@
 import { Router } from 'express'
-import { handleCreateVehicle, handleDeleteVehicle, handleGetVehicleById, handleGetVehicles, handleSetVehicleAvailable, handleSetVehicleOutOfService, handleUpdateVehicle } from '../controllers/vehicle.controller'
-import { authMiddleware } from '../middlewares/auth.middleware'
-import { validate } from '../middlewares/validate.middleware'
-import { createVehicleSchema, updateVehicleSchema } from '../schemas/vehicle.schema'
+import { handleCreateVehicle, handleDeleteVehicle, handleGetVehicleById, handleGetVehicles, handleSetVehicleAvailable, handleSetVehicleOutOfService, handleUpdateVehicle } from '../controllers/vehicle.controller.js'
+import { authMiddleware } from '../middlewares/auth.middleware.js'
+import { validate } from '../middlewares/validate.middleware.js'
+import { createVehicleSchema, updateVehicleSchema } from '../schemas/vehicle.schema.js'
 
 export const vehicleRouter: ReturnType<typeof Router> = Router()
 

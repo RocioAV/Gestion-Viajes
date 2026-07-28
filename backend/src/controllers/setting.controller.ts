@@ -1,5 +1,5 @@
 import type { NextFunction, Request, Response } from 'express'
-import { getBasePrice, updateBasePrice } from '../services/setting.service'
+import { getBasePrice, updateBasePrice } from '../services/setting.service.js'
 
 export async function handleGetBasePrice(req: Request, res: Response, next: NextFunction) {
   try {

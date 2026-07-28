@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { handleGetNextTrips } from '../controllers/public.controller'
+import { handleGetNextTrips } from '../controllers/public.controller.js'
 
 export const publicRouter: ReturnType<typeof Router> = Router()
 
