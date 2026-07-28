@@ -1,5 +1,5 @@
 import type { NextFunction, Request, Response } from 'express'
-import { createDriver, deleteDriver, getDriverById, getDrivers, restoreDriver, toggleAvailability, updateDriver } from '../services/driver.service.js'
+import { createDriver, deleteDriver, getDriverById, getDrivers, restoreDriver, toggleAvailability, updateDriver } from '../services/driver.service'
 
 export async function handleCreateDriver(req: Request, res: Response, next: NextFunction) {
   try {

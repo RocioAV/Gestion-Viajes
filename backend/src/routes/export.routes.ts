@@ -1,6 +1,6 @@
 import { Router } from 'express'
-import { handleExportTrips } from '../controllers/export.controller.js'
-import { authMiddleware } from '../middlewares/auth.middleware.js'
+import { handleExportTrips } from '../controllers/export.controller'
+import { authMiddleware } from '../middlewares/auth.middleware'
 
 export const exportRouter: ReturnType<typeof Router> = Router()
 

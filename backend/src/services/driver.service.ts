@@ -1,5 +1,5 @@
-import type { CreateDriverInput, UpdateDriverInput } from '../schemas/driver.schema.js'
-import { prisma } from '../lib/prisma.js'
+import type { CreateDriverInput, UpdateDriverInput } from '../schemas/driver.schema'
+import { prisma } from '../lib/prisma'
 
 export async function createDriver(input: CreateDriverInput) {
   const existing = await prisma.driver.findUnique({
@@ -94,7 +94,7 @@ export async function deleteDriver(id: number) {
     throw Object.assign(new Error('Chofer no encontrado'), { status: 404 })
   }
 
-  await prisma.$transaction(async (tx: typeof prisma) => {
+  await prisma.$transaction(async (tx) => {
     if (driver.vehicle) {
       await tx.vehicle.update({
         where: { id: driver.vehicle.id },

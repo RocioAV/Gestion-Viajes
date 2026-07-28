@@ -1,8 +1,8 @@
 import type { Cell, Row } from 'exceljs'
-import type { ExportTripsFilters } from '../schemas/export.schema.js'
+import type { ExportTripsFilters } from '../schemas/export.schema'
 import { Buffer } from 'node:buffer'
 import ExcelJS from 'exceljs'
-import { prisma } from '../lib/prisma.js'
+import { prisma } from '../lib/prisma'
 
 function applyHeaderStyle(row: Row) {
   row.eachCell((cell: Cell) => {

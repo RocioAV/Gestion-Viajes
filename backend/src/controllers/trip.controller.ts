@@ -1,7 +1,7 @@
 import type { NextFunction, Request, Response } from 'express'
 import * as v from 'valibot'
-import { queueFiltersSchema, tripFiltersSchema } from '../schemas/trip.schema.js'
-import { addPassenger, cancelTrip, completeTrip, createTrip, getQueue, getTrips, joinQueue, removePassenger } from '../services/trip.service.js'
+import { queueFiltersSchema, tripFiltersSchema } from '../schemas/trip.schema'
+import { addPassenger, cancelTrip, completeTrip, createTrip, getQueue, getTrips, joinQueue, removePassenger } from '../services/trip.service'
 
 export async function handleCreateTrip(req: Request, res: Response, next: NextFunction) {
   try {

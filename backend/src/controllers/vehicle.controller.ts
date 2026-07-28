@@ -1,7 +1,7 @@
 import type { NextFunction, Request, Response } from 'express'
 import * as v from 'valibot'
-import { vehicleFiltersSchema } from '../schemas/vehicle.schema.js'
-import { createVehicle, deleteVehicle, getVehicleById, getVehicles, setVehicleAvailable, setVehicleOutOfService, updateVehicle } from '../services/vehicle.service.js'
+import { vehicleFiltersSchema } from '../schemas/vehicle.schema'
+import { createVehicle, deleteVehicle, getVehicleById, getVehicles, setVehicleAvailable, setVehicleOutOfService, updateVehicle } from '../services/vehicle.service'
 
 export async function handleCreateVehicle(req: Request, res: Response, next: NextFunction) {
   try {

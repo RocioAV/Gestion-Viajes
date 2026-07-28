@@ -1,12 +1,12 @@
 import { Router } from 'express'
-import { authRouter } from './auth.routes.js'
-import { driverRouter } from './driver.routes.js'
-import { exportRouter } from './export.routes.js'
-import { publicRouter } from './public.routes.js'
-import { settingRouter } from './setting.routes.js'
-import { tripRouter } from './trip.routes.js'
-import { userRouter } from './user.routes.js'
-import { vehicleRouter } from './vehicle.routes.js'
+import { authRouter } from './auth.routes'
+import { driverRouter } from './driver.routes'
+import { exportRouter } from './export.routes'
+import { publicRouter } from './public.routes'
+import { settingRouter } from './setting.routes'
+import { tripRouter } from './trip.routes'
+import { userRouter } from './user.routes'
+import { vehicleRouter } from './vehicle.routes'
 
 export const apiRouter: ReturnType<typeof Router> = Router()
 

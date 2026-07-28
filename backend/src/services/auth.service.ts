@@ -2,7 +2,7 @@ import type { SignOptions } from 'jsonwebtoken'
 import process from 'node:process'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
-import { prisma } from '../lib/prisma.js'
+import { prisma } from '../lib/prisma'
 
 const JWT_SECRET = process.env.JWT_SECRET!
 const JWT_EXPIRES_IN: NonNullable<SignOptions['expiresIn']> = (process.env.JWT_EXPIRES_IN ?? '24h') as NonNullable<SignOptions['expiresIn']>
