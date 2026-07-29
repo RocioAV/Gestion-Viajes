@@ -36,18 +36,10 @@ export async function exportTrips(
     params.set('to', filters.date_to)
 
   const query = params.toString()
-  const token = localStorage.getItem('auth_token')
-
-  const response = await fetch(`http://localhost:4000/api/export/trips${query ? `?${query}` : ''}`, {
-    headers: {
-      Authorization: token ? `Bearer ${token}` : '',
-    },
+  const blob = await apiClient<Blob>(`/export/trips${query ? `?${query}` : ''}`, {
+    responseType: 'blob',
   })
 
-  if (!response.ok)
-    throw new Error('Error al exportar viajes')
-
-  const blob = await response.blob()
   const url = URL.createObjectURL(blob)
   const link = document.createElement('a')
   link.href = url

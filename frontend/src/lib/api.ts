@@ -2,15 +2,20 @@ import { getToken, removeToken, removeUser } from './auth'
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL
 
+interface ApiClientOptions extends RequestInit {
+  responseType?: 'json' | 'blob'
+}
+
 export async function apiClient<T>(
   path: string,
-  options: RequestInit = {},
+  options: ApiClientOptions = {},
 ): Promise<T> {
+  const { responseType = 'json', ...fetchOptions } = options
   const token = getToken()
 
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
-    ...(options.headers as Record<string, string> | undefined),
+    ...(fetchOptions.headers as Record<string, string> | undefined),
   }
 
   if (token) {
@@ -18,7 +23,7 @@ export async function apiClient<T>(
   }
 
   const response = await fetch(`${BASE_URL}${path}`, {
-    ...options,
+    ...fetchOptions,
     headers,
   })
 
@@ -32,6 +37,10 @@ export async function apiClient<T>(
   if (!response.ok) {
     const body = await response.json().catch(() => ({}))
     throw new Error(body.error ?? `Error ${response.status}`)
+  }
+
+  if (responseType === 'blob') {
+    return response.blob() as Promise<T>
   }
 
   return response.json() as Promise<T>
